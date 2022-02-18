@@ -1,0 +1,16 @@
+{
+    "name": "SeweralIdeas.Config.Editor",
+    "rootNamespace": "SeweralIdeas.Config.Editor",
+    "references": [
+        "GUID:9335601f754a4914c9a91b13cdffc91e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,10 @@
+{
+  "name": "com.seweralideas.config",
+  "version": "0.1.0",
+  "displayName": "Config",
+  "description": "ScriptableObject oriented PlayerPrefs",
+  "author": {
+    "name": "Boleslav Horak",
+    "email": "seweralideas@gmail.com"
+  }
+}
