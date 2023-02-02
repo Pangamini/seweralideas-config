@@ -80,6 +80,7 @@ namespace SeweralIdeas.Config
         }
 
         public abstract string StringValue { get; }
+        public abstract object GetValue();
     }
 
     public abstract class ConfigValue<T> : ConfigValue, IConfigValue<T>
@@ -122,5 +123,7 @@ namespace SeweralIdeas.Config
                 OnChanged();
             }
         }
+
+        public override object GetValue() => Value;
     }
 }
