@@ -24,10 +24,18 @@ namespace SeweralIdeas.Config
 
         protected void OnEnable()
         {
+            EnsureInitialized();
+        }
+        
+        protected void EnsureInitialized()
+        {
+            if(m_key != null)
+                return;
+            
             m_key = name;
             /// right now using PlayerPrefs, maybe later use some custom config file or something
             var str = PlayerPrefs.GetString(m_key);
-            if (string.IsNullOrEmpty(str))
+            if(string.IsNullOrEmpty(str))
                 SetDefaultValue();
             else
             {
@@ -103,7 +111,11 @@ namespace SeweralIdeas.Config
 
         public T Value
         {
-            get { return m_value; }
+            get
+            {
+                EnsureInitialized();
+                return m_value;
+            }
             set
             {
                 if (m_value == null)
