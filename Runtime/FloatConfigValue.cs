@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Globalization;
+using UnityEngine;
 
 namespace SeweralIdeas.Config
 {
@@ -7,29 +8,23 @@ namespace SeweralIdeas.Config
     {
         int IConfigValue<int>.Value
         {
-            get
-            {
-                return Mathf.FloorToInt(Value);
-            }
-            set
-            {
-                Value = value;
-            }
+            get => Mathf.FloorToInt(Value);
+            set => Value = value;
         }
 
         protected override string GetStringValue()
         {
-            return Value.ToString();
+            return Value.ToString(CultureInfo.InvariantCulture);
         }
 
         protected override void SetStringValue(string value)
         {
-            Value = float.Parse(value);
+            Value = float.Parse(value, CultureInfo.InvariantCulture);
         }
 
-        override public void OnConfigGUI(Rect rect)
+        public override void OnConfigGUI(Rect rect)
         {
-            if (float.TryParse(GUI.TextField(rect, Value.ToString()), out float newValue))
+            if (float.TryParse(GUI.TextField(rect, Value.ToString(CultureInfo.InvariantCulture)), out float newValue))
                 Value = newValue;
         }
     }

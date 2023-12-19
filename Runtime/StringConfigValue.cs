@@ -7,7 +7,7 @@ namespace SeweralIdeas.Config
     {
         protected override string GetStringValue()
         {
-            return Value.ToString();
+            return Value;
         }
 
         protected override void SetStringValue(string value)
@@ -16,7 +16,7 @@ namespace SeweralIdeas.Config
         }
 
 
-        override public void OnConfigGUI(Rect rect)
+        public override void OnConfigGUI(Rect rect)
         {
             Value = GUI.TextArea(rect, Value);
         }
