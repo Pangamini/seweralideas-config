@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace SeweralIdeas.Config
     public abstract class ConfigValue : ScriptableObject
     {
         private static HashSet<ConfigValue> s_allConfigValues = new HashSet<ConfigValue>();
-        private string m_key;
+        [NonSerialized] private string m_key;
         protected bool m_dirty;
 
         protected abstract string GetStringValue();
@@ -33,7 +34,8 @@ namespace SeweralIdeas.Config
                 return;
             
             m_key = name;
-            /// right now using PlayerPrefs, maybe later use some custom config file or something
+            
+            // right now using PlayerPrefs, maybe later use some custom config file or something
             var str = PlayerPrefs.GetString(m_key);
             if(string.IsNullOrEmpty(str))
                 SetDefaultValue();
@@ -70,7 +72,7 @@ namespace SeweralIdeas.Config
 
         private void OnValidate()
         {
-            m_key = name;
+            EnsureInitialized();
         }
 
         public virtual float GetGUIHeight()
