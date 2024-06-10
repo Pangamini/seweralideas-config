@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SeweralIdeas.Config
 {
-    public class StringConfigReader : ConfigReader<string, StringConfigValue>
+    public class StringConfigReader : ConfigReader<string, StringConfigField>
     {
     }
 }
