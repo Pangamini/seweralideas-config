@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 namespace SeweralIdeas.Config
 {
-    public class ConfigReader<T, TVal> : MonoBehaviour where T : System.IEquatable<T> where TVal: ConfigValue<T>
+    public class ConfigReader<T, TVal> : MonoBehaviour where T : System.IEquatable<T> where TVal: ConfigField<T>
     {
         
         [SerializeField] private TVal m_configValue;
@@ -28,8 +28,8 @@ namespace SeweralIdeas.Config
         {
             if (m_configValue)
             {
-                OnValueChanged(m_configValue.Value);
-                m_configValue.onValueChanged += OnValueChanged;
+                ValueChanged(m_configValue.Value);
+                m_configValue.ValueChanged += ValueChanged;
             }
             m_started = true;
         }
@@ -38,11 +38,11 @@ namespace SeweralIdeas.Config
         {
             if (m_configValue)
             {
-                m_configValue.onValueChanged -= OnValueChanged;
+                m_configValue.ValueChanged -= ValueChanged;
             }
         }
 
-        protected virtual void OnValueChanged(T value)
+        protected virtual void ValueChanged(T value)
         {
             onChanged.Invoke(PostprocessValue(value));
         }

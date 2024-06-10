@@ -1,7 +1,7 @@
 {
     "name": "SeweralIdeas.Config",
     "rootNamespace": "SeweralIdeas.Config",
-    "references": [],
+    "references": ["GUID:cf5a3647f2623f044943c7d12af0b6c4"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

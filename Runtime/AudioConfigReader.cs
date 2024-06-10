@@ -6,28 +6,28 @@ namespace SeweralIdeas.Config
 {
     public class AudioConfigReader : MonoBehaviour
     {
-        [SerializeField] private FloatConfigValue m_configValue;
+        [SerializeField] private FloatConfigField m_configField;
         [SerializeField] public string mixerExposedName;
         [SerializeField] public UnityEngine.Audio.AudioMixer mixer;
 
         private void Start()
         {
-            if (m_configValue)
+            if (m_configField)
             {
-                OnValueChanged(m_configValue.Value);
-                m_configValue.onValueChanged += OnValueChanged;
+                ValueChanged(m_configField.Value);
+                m_configField.ValueChanged += ValueChanged;
             }
         }
 
         private void OnDestroy()
         {
-            if (m_configValue)
+            if (m_configField)
             {
-                m_configValue.onValueChanged -= OnValueChanged;
+                m_configField.ValueChanged -= ValueChanged;
             }
         }
 
-        private void OnValueChanged(float value)
+        private void ValueChanged(float value)
         {
             float dbValue;
             if (value <= 0)

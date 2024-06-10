@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SeweralIdeas.Config
 {
-    public class BoolConfigReader : ConfigReader<bool, BoolConfigValue>
+    public class BoolConfigReader : ConfigReader<bool, BoolConfigField>
     {
         [SerializeField] bool m_invert;
         [SerializeField] public UnityEngine.Events.UnityEvent onTrue;
@@ -15,7 +15,7 @@ namespace SeweralIdeas.Config
             return value ^ m_invert;
         }
 
-        protected override void OnValueChanged(bool value)
+        protected override void ValueChanged(bool value)
         {
             value = PostprocessValue(value);
             onChanged.Invoke(value);
