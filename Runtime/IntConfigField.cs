@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using SeweralIdeas.UnityUtils;
 using UnityEngine;
 
 namespace SeweralIdeas.Config
@@ -28,7 +29,7 @@ namespace SeweralIdeas.Config
 
         public override void OnConfigGUI(Rect rect)
         {
-            if (int.TryParse(GUI.TextField(rect, Value.ToString(CultureInfo.InvariantCulture)), out int newValue))
+            if (int.TryParse(SeweralGUI.DelayedTextField(rect, Value.ToString(CultureInfo.InvariantCulture)), out int newValue))
                 Value = newValue;
         }
     }

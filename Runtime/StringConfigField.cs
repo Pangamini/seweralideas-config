@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using SeweralIdeas.UnityUtils;
+using UnityEngine;
 
 namespace SeweralIdeas.Config
 {
@@ -21,7 +22,7 @@ namespace SeweralIdeas.Config
 
         public override void OnConfigGUI(Rect rect)
         {
-            Value = GUI.TextArea(rect, Value);
+            Value = SeweralGUI.DelayedTextArea(rect, Value);
         }
 
         public override float GetGUIHeight()
