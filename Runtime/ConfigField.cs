@@ -45,6 +45,7 @@ namespace SeweralIdeas.Config
 
         public abstract string StringValue { get; }
         public Config Config => m_config;
+        public string Key => name;
 
         public abstract object GetValue();
         

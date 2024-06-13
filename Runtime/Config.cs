@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using SeweralIdeas.Collections;
 using UnityEngine;
-
 namespace SeweralIdeas.Config
 {
     [CreateAssetMenu(menuName = "SeweralIdeas/"+nameof(Config))]
@@ -10,14 +9,19 @@ namespace SeweralIdeas.Config
     {
         [SerializeField] private string m_globalName;
         [SerializeField] private bool m_autoLoadSave;
+
+        [SerializeReference]
+        private ConfigStoragePlan m_storagePlan;
         
         private readonly HashSet<ConfigField> m_fields = new();
+        
         private bool m_dirty;
-        private bool m_loaded;
+        private ConfigStorage m_currentStorage;
         [NonSerialized] private bool m_autoSaveHooked;
         
         public ReadonlySetView<ConfigField> Fields => new ReadonlySetView<ConfigField>(m_fields);
         public bool IsDirty => m_dirty;
+        public string GlobalName => m_globalName;
 
         private void OnEnable()
         {
@@ -57,8 +61,10 @@ namespace SeweralIdeas.Config
         internal void RegisterField(ConfigField field)
         {
             m_fields.Add(field);
-            if(m_loaded)
-                LoadField(field);
+            if(m_currentStorage != null)
+            {
+                m_currentStorage.LoadField(field);
+            }
         }
 
         internal void UnregisterField(ConfigField field)
@@ -68,48 +74,40 @@ namespace SeweralIdeas.Config
         
         public void Save()
         {
+            m_currentStorage = m_storagePlan.CreateAvailableStorage();
+            
             if(!IsDirty)
                 return;
             
-            Debug.Log($"Config.Save {name}");
+            Debug.Log($"Saving Config {GlobalName} to {m_currentStorage}", this);
+            
             m_dirty = false;
 
-            foreach (ConfigField field in m_fields)
-            {
-                string strVal = field.GetStringValue();
-                PlayerPrefs.SetString(GetFieldKey(field), strVal);
-            }
-            PlayerPrefs.Save();
+            m_currentStorage.Save(this);
         }
 
         public void Load()
         {
-            Debug.Log($"Config.Load {name}");
-            foreach (ConfigField field in m_fields)
+            m_currentStorage = m_storagePlan.CreateAvailableStorage();
+            
+            Debug.Log($"Loading Config {GlobalName} from {m_currentStorage}", this);
+
+            m_currentStorage.PreLoad(this);
+
+            foreach (var field in m_fields)
             {
-                LoadField(field);
+                m_currentStorage.LoadField(field);
             }
             
-            m_loaded = true;
             m_dirty = false;
         }
-        private void LoadField(ConfigField field)
-        {
-            string str = PlayerPrefs.GetString(GetFieldKey(field));
-            if(!field.SetStringValue(str))
-            {
-                field.SetDefaultValue();
-            }
-        }
-
-        private string GetFieldKey(ConfigField field) => $"{m_globalName}.{field.name}";
-
-        public void SetFieldsDirty()
+        
+        internal void SetFieldsDirty()
         {
             m_dirty = true;
         }
 
-        public void EnsureInitialized()
+        internal void EnsureInitialized()
         {
             
         }

@@ -3,7 +3,8 @@
     "rootNamespace": "SeweralIdeas.Config.Editor",
     "references": [
         "GUID:9335601f754a4914c9a91b13cdffc91e",
-        "GUID:cf5a3647f2623f044943c7d12af0b6c4"
+        "GUID:cf5a3647f2623f044943c7d12af0b6c4",
+        "GUID:5351cf00130a51947b70be1b66be9753"
     ],
     "includePlatforms": [
         "Editor"

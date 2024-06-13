@@ -1,12 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using SeweralIdeas.UnityUtils.Editor;
 using SeweralIdeas.Utils;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.Pool;
-
 namespace SeweralIdeas.Config.Editor
 {
     [CustomEditor(typeof(Config))]
@@ -15,25 +12,39 @@ namespace SeweralIdeas.Config.Editor
         private static ConfigField s_selectedField;
         private GUIStyle s_toggleStyle;
         private GUIStyle s_minusButtonStyle;
+        private Rect m_createRect;
 
         public override void OnInspectorGUI()
         {
             Config config = (Config)target;
-            
+            SerializedProperty foldout = serializedObject.FindProperty("m_globalName");
+
             s_toggleStyle ??= new GUIStyle(EditorStyles.miniButton) { alignment = TextAnchor.LowerLeft };
             s_minusButtonStyle ??= new GUIStyle("OL Minus") { fixedWidth = 24 };
-            
-            base.OnInspectorGUI();
-            TypeUtility.TypeList fieldTypes = TypeUtility.GetDerivedTypes(new(typeof( ConfigField ), false, true));
 
-            // Load/Save bar
+            base.OnInspectorGUI();
+
+            
+            StorageGUI(config);
+
+            GUILayout.Space(EditorGUIUtility.singleLineHeight);
+            foldout.isExpanded = EditorGUILayout.Foldout(foldout.isExpanded, "Fields");
+
+            if(foldout.isExpanded)
+            {
+                FieldsGUI(config);
+            }
+        }
+        private static void StorageGUI(Config config)
+        {
+
             using (new GUILayout.HorizontalScope())
             {
                 if(GUILayout.Button("Load", EditorStyles.miniButtonLeft))
                 {
                     config.Load();
                 }
-                
+
                 GUI.enabled = config.IsDirty;
                 if(GUILayout.Button("Save", EditorStyles.miniButtonRight))
                 {
@@ -41,20 +52,20 @@ namespace SeweralIdeas.Config.Editor
                 }
                 GUI.enabled = true;
             }
-            
-            // Field creation bar
-            using (new GUILayout.HorizontalScope())
+        }
+        private void FieldsGUI(Config config)
+        {
+
+            // Creation Dropdown
+            bool clicked = GUILayout.Button("Create", "MiniPopup");
+            if(Event.current.type == EventType.Repaint)
+                m_createRect = GUILayoutUtility.GetLastRect();
+            if(clicked)
             {
-                for( int typeIndex = 0; typeIndex < fieldTypes.names.Length; typeIndex++ )
-                {
-                    Type type = fieldTypes.types[typeIndex];
-                    if(GUILayout.Button(type.Name))
-                    {
-                        AddField(type);
-                    }
-                }
+                TypeDropdown.ShowTypeDropdown(m_createRect, new(typeof( ConfigField ), false, true), AddField);
             }
-            
+
+
             // ConfigField list
             if(config.Fields.Count > 0)
             {
@@ -66,7 +77,7 @@ namespace SeweralIdeas.Config.Editor
                             continue;
                         configFields.Add(field);
                     }
-                    configFields.Sort((lhs, rhs)=>String.Compare(lhs.name, rhs.name, StringComparison.Ordinal));
+                    configFields.Sort((lhs, rhs) => String.Compare(lhs.name, rhs.name, StringComparison.Ordinal));
 
                     for( int i = 0; i < configFields.Count; ++i )
                     {
@@ -88,7 +99,7 @@ namespace SeweralIdeas.Config.Editor
                     }
                 }
             }
-
+            
             // Selected field editor
             if(s_selectedField && config.Fields.Contains(s_selectedField))
             {
@@ -106,7 +117,7 @@ namespace SeweralIdeas.Config.Editor
                 GUILayout.EndVertical();
             }
         }
-        
+
         private void RemoveField(ConfigField field)
         {
             Undo.DestroyObjectImmediate(field);
@@ -125,6 +136,7 @@ namespace SeweralIdeas.Config.Editor
             serializedObject.ApplyModifiedProperties();
             SaveAndRefresh();
             Undo.RegisterCreatedObjectUndo(newField, "Created ConfigField");
+            s_selectedField = newField;
         }
         
         private static void SaveAndRefresh()
