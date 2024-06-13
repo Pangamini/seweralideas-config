@@ -1,6 +1,5 @@
 using System;
 using SeweralIdeas.UnityUtils.Editor;
-using SeweralIdeas.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -10,8 +9,8 @@ namespace SeweralIdeas.Config.Editor
     public class ConfigEditor : UnityEditor.Editor
     {
         private static ConfigField s_selectedField;
-        private GUIStyle s_toggleStyle;
-        private GUIStyle s_minusButtonStyle;
+        private static GUIStyle s_toggleStyle;
+        private static GUIStyle s_minusButtonStyle;
         private Rect m_createRect;
 
         public override void OnInspectorGUI()
@@ -55,7 +54,6 @@ namespace SeweralIdeas.Config.Editor
         }
         private void FieldsGUI(Config config)
         {
-
             // Creation Dropdown
             bool clicked = GUILayout.Button("Create", "MiniPopup");
             if(Event.current.type == EventType.Repaint)
