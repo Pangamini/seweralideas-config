@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SeweralIdeas.Config
 {
@@ -10,15 +8,12 @@ namespace SeweralIdeas.Config
         [SerializeField] public UnityEngine.Events.UnityEvent onTrue;
         [SerializeField] public UnityEngine.Events.UnityEvent onFalse;
 
-        protected override bool PostprocessValue(bool value)
-        {
-            return value ^ m_invert;
-        }
-
+        protected override bool PostprocessValue(bool value) => value ^ m_invert;
+        
         protected override void ValueChanged(bool value)
         {
             value = PostprocessValue(value);
-            onChanged.Invoke(value);
+            OnChanged.Invoke(value);
 
             if (value)
                 onTrue.Invoke();
