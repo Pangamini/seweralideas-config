@@ -21,7 +21,7 @@ namespace SeweralIdeas.Config
             }
         }
 
-        protected void Start()
+        protected virtual void Start()
         {
             if (m_configValue)
             {
@@ -31,7 +31,7 @@ namespace SeweralIdeas.Config
             m_started = true;
         }
 
-        protected void OnDestroy()
+        protected virtual void OnDestroy()
         {
             if (m_configValue)
             {
