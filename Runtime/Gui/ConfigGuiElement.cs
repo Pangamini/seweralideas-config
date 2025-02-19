@@ -1,8 +1,6 @@
-using System;
+#nullable enable
 using SeweralIdeas.Config;
 using UnityEngine;
-using UnityEngine.Events;
-
 namespace SeweralIdeas.ConfigGui
 {
     public abstract class ConfigGuiElement : MonoBehaviour
@@ -11,11 +9,11 @@ namespace SeweralIdeas.ConfigGui
     
     public abstract class ConfigGuiElement<T> : ConfigGuiElement
     {
-        [SerializeField] private ConfigField<T> m_field;
-        private                  ConfigField<T> m_registeredField;
-        private                  bool           m_enabled;
+        [SerializeField] private ConfigField<T>? m_field;
+        private                  ConfigField<T>? m_registeredField;
+        private                  bool            m_enabled;
 
-        public ConfigField<T> Field
+        public ConfigField<T>? Field
         {
             get => m_field;
             set
@@ -29,7 +27,7 @@ namespace SeweralIdeas.ConfigGui
             }
         }
 
-        private ConfigField<T> RegisteredField
+        private ConfigField<T>? RegisteredField
         {
             get => m_registeredField;
             set
@@ -49,7 +47,8 @@ namespace SeweralIdeas.ConfigGui
 
         protected void OnGuiValueChanged(T guiValue)
         {
-            m_field.Value = guiValue;
+            if(m_field != null)
+                m_field.Value = guiValue;
         }
         
         protected void OnEnable()

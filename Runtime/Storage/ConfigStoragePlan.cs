@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using SeweralIdeas.UnityUtils;
 using UnityEngine;
@@ -16,10 +17,13 @@ namespace SeweralIdeas.Config
     {
         [InstantiateGUI(typeof( StorageDescription ))]
         [SerializeReference]
-        private StorageDescription[] m_descriptions;
+        private StorageDescription[]? m_descriptions;
         
-        public ConfigStorage CreateAvailableStorage()
+        public ConfigStorage? CreateAvailableStorage()
         {
+            if(m_descriptions == null)
+                return null;
+            
             foreach (StorageDescription storageDescription in m_descriptions)
             {
                 if(!storageDescription.Available)

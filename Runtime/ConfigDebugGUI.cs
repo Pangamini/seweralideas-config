@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using UnityEngine;
 
@@ -6,15 +7,15 @@ namespace SeweralIdeas.Config
     [ExecuteAlways]
     public class ConfigDebugGUI : MonoBehaviour
     {
-        [SerializeField] private Config[] m_configs;
+        [SerializeField] private Config[] m_configs = Array.Empty<Config>();
         [SerializeField] private Rect     m_screenRect;
 
-        private Config  m_selectedConfig;
+        private Config? m_selectedConfig;
         private Vector2 m_fieldScrollPos;
 
         private void Start()
         {
-            m_selectedConfig ??= m_configs.Length > 0 ? m_configs[0] : null;
+            m_selectedConfig = m_selectedConfig ? m_selectedConfig : m_configs.Length > 0 ? m_configs[0] : null;
         }
 
         private void OnGUI()

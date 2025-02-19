@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,7 +13,7 @@ namespace SeweralIdeas.Config
 
         public UnityEvent<T> OnChanged => m_onChanged;
         
-        protected override void ValueChanged(T value) => OnChanged.Invoke(PostprocessValue(value));
+        protected override void FieldChanged(T value) => OnChanged.Invoke(PostprocessValue(value));
 
         protected virtual T PostprocessValue(T value) => value;
 

@@ -1,3 +1,4 @@
+#nullable enable
 using UnityEngine;
 using UnityEngine.Scripting;
 namespace SeweralIdeas.Config
@@ -28,14 +29,14 @@ namespace SeweralIdeas.Config
 
         public override void LoadField(ConfigField field)
         {
-            string str = PlayerPrefs.GetString(GetFieldKey(field));
-            if(!field.SetStringValue(str))
+            string? str = PlayerPrefs.GetString(GetFieldKey(field));
+            if(str == null || !field.SetStringValue(str))
             {
                 field.SetDefaultValue();
             }
         }
         
-        private string GetFieldKey(ConfigField field) => $"{field.Config.GlobalName}.{field.Key}";
+        private string GetFieldKey(ConfigField field) => $"{field.Config!.GlobalName}.{field.Key}";
 
     }
 }

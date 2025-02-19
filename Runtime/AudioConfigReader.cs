@@ -1,30 +1,38 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿#nullable enable
 using UnityEngine;
+using UnityEngine.Audio;
+using UnityEngine.Serialization;
 
 namespace SeweralIdeas.Config
 {
     public class AudioConfigReader : MonoBehaviour
     {
-        [SerializeField] private FloatConfigField m_configField;
-        [SerializeField] public string mixerExposedName;
-        [SerializeField] public UnityEngine.Audio.AudioMixer mixer;
+        [SerializeField] 
+        private FloatConfigField? m_configField;
+
+        [FormerlySerializedAs("mixerExposedName")]
+        [SerializeField]
+        private string? m_mixerExposedName;
+
+        [FormerlySerializedAs("mixer")]
+        [SerializeField]
+        private AudioMixer? m_mixer;
 
         private void Start()
         {
-            if (m_configField)
-            {
-                ValueChanged(m_configField.Value);
-                m_configField.ValueChanged += ValueChanged;
-            }
+            if(m_configField == null)
+                return;
+            
+            ValueChanged(m_configField.Value);
+            m_configField.ValueChanged += ValueChanged;
         }
 
         private void OnDestroy()
         {
-            if (m_configField)
-            {
-                m_configField.ValueChanged -= ValueChanged;
-            }
+            if(m_configField == null)
+                return;
+            
+            m_configField.ValueChanged -= ValueChanged;
         }
 
         private void ValueChanged(float value)
@@ -34,7 +42,7 @@ namespace SeweralIdeas.Config
                 dbValue = -80;
             else
                 dbValue = Mathf.Log(value) * 20;
-            mixer.SetFloat(mixerExposedName, dbValue);
+            m_mixer?.SetFloat(m_mixerExposedName, dbValue);
         }
     }
 }

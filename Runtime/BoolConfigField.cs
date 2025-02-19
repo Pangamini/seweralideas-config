@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿#nullable enable
+using System.Globalization;
 using UnityEngine;
 
 namespace SeweralIdeas.Config
