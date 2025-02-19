@@ -1,4 +1,5 @@
-﻿using SeweralIdeas.UnityUtils;
+﻿#nullable enable
+using SeweralIdeas.UnityUtils;
 using UnityEngine;
 
 namespace SeweralIdeas.Config
@@ -12,9 +13,6 @@ namespace SeweralIdeas.Config
 
         public override bool SetStringValue(string value)
         {
-            if(value == null)
-                return false;
-            
             Value = value;
             return true;
         }

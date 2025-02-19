@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using SeweralIdeas.Collections;
@@ -7,21 +8,21 @@ namespace SeweralIdeas.Config
     [CreateAssetMenu(menuName = "SeweralIdeas/"+nameof(Config))]
     public class Config : ScriptableObject
     {
-        [SerializeField] private string m_globalName;
-        [SerializeField] private bool m_autoLoadSave;
+        [SerializeField] private string? m_globalName;
+        [SerializeField] private bool    m_autoLoadSave;
 
         [SerializeReference]
-        private ConfigStoragePlan m_storagePlan;
+        private ConfigStoragePlan? m_storagePlan;
         
         private readonly HashSet<ConfigField> m_fields = new();
         
-        private bool m_dirty;
-        private ConfigStorage m_currentStorage;
-        [NonSerialized] private bool m_autoSaveHooked;
+        private                 bool           m_dirty;
+        private                 ConfigStorage? m_currentStorage;
+        [NonSerialized] private bool           m_autoSaveHooked;
         
         public ReadonlySetView<ConfigField> Fields => new ReadonlySetView<ConfigField>(m_fields);
         public bool IsDirty => m_dirty;
-        public string GlobalName => m_globalName;
+        public string GlobalName => m_globalName ?? string.Empty;
 
         private void OnEnable()
         {
@@ -61,43 +62,40 @@ namespace SeweralIdeas.Config
         internal void RegisterField(ConfigField field)
         {
             m_fields.Add(field);
-            if(m_currentStorage != null)
-            {
-                m_currentStorage.LoadField(field);
-            }
+            m_currentStorage?.LoadField(field);
         }
 
         internal void UnregisterField(ConfigField field)
         {
             m_fields.Remove(field);
         }
+
+        private ConfigStorage EnsureStorage()
+        {
+            m_currentStorage ??= m_storagePlan != null ? m_storagePlan.CreateAvailableStorage() : null;
+            return m_currentStorage ?? throw new InvalidOperationException("Storage is null");
+        }
         
         public void Save()
         {
-            m_currentStorage = m_storagePlan.CreateAvailableStorage();
-            
             if(!IsDirty)
                 return;
             
             Debug.Log($"Saving Config {GlobalName} to {m_currentStorage}", this);
             
+            EnsureStorage().Save(this);
             m_dirty = false;
-
-            m_currentStorage.Save(this);
         }
 
         public void Load()
         {
-            m_currentStorage = m_storagePlan.CreateAvailableStorage();
-            
             Debug.Log($"Loading Config {GlobalName} from {m_currentStorage}", this);
 
-            m_currentStorage.PreLoad(this);
+            ConfigStorage storage = EnsureStorage();
+            storage.PreLoad(this);
 
             foreach (var field in m_fields)
-            {
-                m_currentStorage.LoadField(field);
-            }
+                storage.LoadField(field);
             
             m_dirty = false;
         }

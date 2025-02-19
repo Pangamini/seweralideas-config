@@ -1,4 +1,6 @@
+#nullable enable
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace SeweralIdeas.Config
 {
@@ -7,38 +9,26 @@ namespace SeweralIdeas.Config
         where TVal: ConfigField<T>
     {
 
-        [SerializeField] private TVal m_configValue;
-                
-        private bool m_started = false;
-
-        public T Value
-        {
-            get => m_configValue.Value;
-            set
-            {
-                if(m_started)
-                    m_configValue.Value = value;
-            }
-        }
-
+        [FormerlySerializedAs("m_configValue")]
+        [SerializeField] private TVal? m_configField;
+        
         protected virtual void Start()
         {
-            if (m_configValue)
-            {
-                ValueChanged(m_configValue.Value);
-                m_configValue.ValueChanged += ValueChanged;
-            }
-            m_started = true;
+            if(m_configField == null)
+                return;
+            
+            FieldChanged(m_configField.Value);
+            m_configField.ValueChanged += FieldChanged;
         }
 
         protected virtual void OnDestroy()
         {
-            if (m_configValue)
+            if (m_configField != null)
             {
-                m_configValue.ValueChanged -= ValueChanged;
+                m_configField.ValueChanged -= FieldChanged;
             }
         }
 
-        protected abstract void ValueChanged(T value);
+        protected abstract void FieldChanged(T value);
     }
 }

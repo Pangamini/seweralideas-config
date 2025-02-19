@@ -1,3 +1,5 @@
+#nullable enable
+using System;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -29,11 +31,11 @@ namespace SeweralIdeas.Config
         protected override Stream CreateWriteStream(Config config)
         {
             FileInfo file = GetFileInfo(config);
-            Directory.CreateDirectory(file.Directory.FullName);
+            Directory.CreateDirectory(file.Directory!.FullName);
             return file.Open(FileMode.Create, FileAccess.Write);
         }
         
-        protected override Stream CreateReadStream(Config config)
+        protected override Stream? CreateReadStream(Config config)
         {
             FileInfo file = GetFileInfo(config);
             if(!file.Exists)
@@ -55,6 +57,7 @@ namespace SeweralIdeas.Config
             {
                 FileConfigStorageDescription.RootFolder.StreamingAssets => Application.streamingAssetsPath,
                 FileConfigStorageDescription.RootFolder.PersistentDataPath => Application.persistentDataPath,
+                _ => throw new ArgumentOutOfRangeException()
             };
             return Path.ChangeExtension(Path.Combine(root, m_description.SubFolder, config.GlobalName), m_description.Extension);
         }

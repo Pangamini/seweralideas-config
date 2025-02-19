@@ -1,3 +1,4 @@
+#nullable enable
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,7 +6,7 @@ namespace SeweralIdeas.ConfigGui
 {
     public class ConfigGuiToggle : ConfigGuiElement<bool>
     {
-        [SerializeField] private Toggle m_toggle;
+        [SerializeField] private Toggle m_toggle = default!;
         
         protected override void OnFieldValueChanged(bool value)
         {

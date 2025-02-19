@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,9 +9,9 @@ namespace SeweralIdeas.Config
     public abstract class StreamConfigStorage : ConfigStorage
     {
         private const char EscapeCharacter = '\\';
-        private static readonly Encoding s_streamEncoding = Encoding.UTF8;
-        private static readonly Dictionary<char, char> s_unescapedChars = new Dictionary<char, char>();
-        private static readonly Dictionary<char, char> s_escapedChars = new Dictionary<char, char>
+        private static readonly Encoding StreamEncoding = Encoding.UTF8;
+        private static readonly Dictionary<char, char> UnescapedChars = new Dictionary<char, char>();
+        private static readonly Dictionary<char, char> EscapedChars = new Dictionary<char, char>
         {
             { '=', '=' },
             { ' ', '_' },
@@ -22,8 +23,8 @@ namespace SeweralIdeas.Config
 
         static StreamConfigStorage()
         {
-            foreach(var pair in s_escapedChars)
-                s_unescapedChars.Add(pair.Value, pair.Key);
+            foreach(var pair in EscapedChars)
+                UnescapedChars.Add(pair.Value, pair.Key);
         }
 
         public override void LoadField(ConfigField field)
@@ -46,9 +47,9 @@ namespace SeweralIdeas.Config
             if(stream == null)
                 return false;
             
-            using var reader = new StreamReader(stream, s_streamEncoding);
+            using var reader = new StreamReader(stream, StreamEncoding);
 
-            string key = null;
+            string? key = null;
             StringBuilder sb = new();
             bool escaping = false;
 
@@ -56,7 +57,7 @@ namespace SeweralIdeas.Config
             {
                 string value = sb.ToString();
                 sb.Clear();
-                m_loadedStringValues.Add(key, value);
+                m_loadedStringValues.Add(key ?? throw new InvalidOperationException(), value);
                 key = null;
             }
             
@@ -72,7 +73,7 @@ namespace SeweralIdeas.Config
                 char ch = (char)val;
                 if(escaping)
                 {
-                    if(!s_unescapedChars.TryGetValue(ch, out var unescaped))
+                    if(!UnescapedChars.TryGetValue(ch, out var unescaped))
                         throw new Exception($"Unknown escape '{ch}'");
                     sb.Append(unescaped);
                     escaping = false;
@@ -108,7 +109,7 @@ namespace SeweralIdeas.Config
         public override sealed bool Save(Config config)
         {
             using var stream = CreateWriteStream(config);
-            using var writer = new StreamWriter(stream, s_streamEncoding);
+            using var writer = new StreamWriter(stream, StreamEncoding);
             using (ListPool<ConfigField>.Get(out var fields))
             {
                 foreach(var field in config.Fields)
@@ -129,14 +130,14 @@ namespace SeweralIdeas.Config
 
                 if(enumerator.MoveNext())
                 {
-                    ConfigField current = enumerator.Current;
+                    ConfigField? current = enumerator.Current;
                     if(current != null)
                         WriteField(current);
                 }
 
                 while(enumerator.MoveNext())
                 {
-                    ConfigField current = enumerator.Current;
+                    ConfigField? current = enumerator.Current;
                     if(current == null)
                         continue;
 
@@ -153,7 +154,7 @@ namespace SeweralIdeas.Config
         {
             foreach (char ch in data)
             {
-                if(s_escapedChars.TryGetValue(ch, out var escaped))
+                if(EscapedChars.TryGetValue(ch, out var escaped))
                 {
                     writer.Write(EscapeCharacter);
                     writer.Write(escaped);
@@ -166,6 +167,6 @@ namespace SeweralIdeas.Config
         }
 
         protected abstract Stream CreateWriteStream(Config config);
-        protected abstract Stream CreateReadStream(Config config);
+        protected abstract Stream? CreateReadStream(Config config);
     }
 }
