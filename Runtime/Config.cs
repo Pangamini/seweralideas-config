@@ -23,6 +23,7 @@ namespace SeweralIdeas.Config
         public ReadonlySetView<ConfigField> Fields => new ReadonlySetView<ConfigField>(m_fields);
         public bool IsDirty => m_dirty;
         public string GlobalName => m_globalName ?? string.Empty;
+        public ConfigStoragePlan? StoragePlan => m_storagePlan;
 
         private void OnEnable()
         {

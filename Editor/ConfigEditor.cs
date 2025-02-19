@@ -1,17 +1,19 @@
+#nullable enable
 using System;
 using SeweralIdeas.UnityUtils.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
+
 namespace SeweralIdeas.Config.Editor
 {
     [CustomEditor(typeof(Config))]
     public class ConfigEditor : UnityEditor.Editor
     {
-        private static ConfigField s_selectedField;
-        private static GUIStyle s_toggleStyle;
-        private static GUIStyle s_minusButtonStyle;
-        private Rect m_createRect;
+        private static ConfigField? s_selectedField;
+        private static GUIStyle?    s_toggleStyle;
+        private static GUIStyle?    s_minusButtonStyle;
+        private        Rect         m_createRect;
 
         public override void OnInspectorGUI()
         {
@@ -36,7 +38,7 @@ namespace SeweralIdeas.Config.Editor
         }
         private static void StorageGUI(Config config)
         {
-
+            GUI.enabled = config.StoragePlan != null;
             using (new GUILayout.HorizontalScope())
             {
                 if(GUILayout.Button("Load", EditorStyles.miniButtonLeft))
@@ -44,20 +46,22 @@ namespace SeweralIdeas.Config.Editor
                     config.Load();
                 }
 
-                GUI.enabled = config.IsDirty;
+                GUI.enabled &= config.IsDirty;
                 if(GUILayout.Button("Save", EditorStyles.miniButtonRight))
                 {
                     config.Save();
                 }
-                GUI.enabled = true;
             }
+            GUI.enabled = true;
         }
+        
         private void FieldsGUI(Config config)
         {
             // Creation Dropdown
             bool clicked = GUILayout.Button("Create", "MiniPopup");
             if(Event.current.type == EventType.Repaint)
                 m_createRect = GUILayoutUtility.GetLastRect();
+            
             if(clicked)
             {
                 TypeDropdown.ShowTypeDropdown(m_createRect, new(typeof( ConfigField ), false, true), AddField);
@@ -99,19 +103,24 @@ namespace SeweralIdeas.Config.Editor
             }
             
             // Selected field editor
-            if(s_selectedField && config.Fields.Contains(s_selectedField))
+            if(s_selectedField != null && config.Fields.Contains(s_selectedField))
             {
                 GUILayout.BeginVertical(GUIContent.none, "box");
-                string newName = EditorGUILayout.DelayedTextField("Name", s_selectedField.name);
-                if(newName != s_selectedField.name)
-                {
-                    Undo.RegisterCompleteObjectUndo(s_selectedField, "Rename ConfigField");
-                    s_selectedField.name = newName;
-                }
+                // string newName = EditorGUILayout.DelayedTextField("Name", s_selectedField.name);
+                // if(newName != s_selectedField.name)
+                // {
+                //     Undo.RegisterCompleteObjectUndo(s_selectedField, "Rename ConfigField");
+                //     s_selectedField.name = newName;
+                // }
 
                 UnityEditor.Editor editor = CreateEditor(s_selectedField);
                 editor.OnInspectorGUI();
-                editor.serializedObject.ApplyModifiedProperties();
+                if(editor.serializedObject.hasModifiedProperties)
+                {   
+                    editor.serializedObject.ApplyModifiedProperties();
+                    Undo.RegisterCompleteObjectUndo(s_selectedField, "Rename ConfigField");
+                    s_selectedField.name = s_selectedField.Key;
+                }
                 GUILayout.EndVertical();
             }
         }
