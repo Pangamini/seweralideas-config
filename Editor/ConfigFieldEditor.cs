@@ -1,25 +1,23 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿#nullable enable
 using UnityEditor;
+using UnityEngine;
 
 namespace SeweralIdeas.Config.Editor
 {
     [CustomEditor(typeof(ConfigField), true)]
     public class ConfigFieldEditor : UnityEditor.Editor
     {
-        private static readonly GUIContent s_valueLabel = new GUIContent("Value");
-        private static readonly string[] s_excludeConfig = {"m_Script", "m_config"};
-        private static readonly string[] s_exclude = {"m_Script"};
+        private static readonly string[] ExcludeConfig = {"m_Script", "m_config"};
+        private static readonly string[] Exclude = {"m_Script"};
         
         public override void OnInspectorGUI()
         {
             ConfigField field = (ConfigField)target;
 
             if(AssetDatabase.GetAssetPath(target) == AssetDatabase.GetAssetPath(field.Config))
-                DrawPropertiesExcluding(serializedObject, s_excludeConfig);
+                DrawPropertiesExcluding(serializedObject, ExcludeConfig);
             else
-                DrawPropertiesExcluding(serializedObject, s_exclude);
+                DrawPropertiesExcluding(serializedObject, Exclude);
             
 
             using (new GUILayout.VerticalScope("box"))

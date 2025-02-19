@@ -13,6 +13,7 @@ namespace SeweralIdeas.Config
     public abstract class ConfigField : ScriptableObject, ISerializationCallbackReceiver
     {
         [SerializeField] private Config? m_config;
+        [SerializeField] private string m_key = "";
         private                  Config? m_registeredTo;
         private                  bool    m_enabled;
 
@@ -46,7 +47,7 @@ namespace SeweralIdeas.Config
 
         public abstract string? StringValue { get; }
         public Config? Config => m_config;
-        public string Key => name;
+        public string Key => m_key;
 
         public abstract object? GetValue();
         
