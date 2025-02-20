@@ -1,20 +1,22 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using SeweralIdeas.UnityUtils.Editor;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Pool;
 
 namespace SeweralIdeas.Config.Editor
 {
     [CustomEditor(typeof(Config))]
     public class ConfigEditor : UnityEditor.Editor
     {
-        private static ConfigField? s_selectedField;
-        private static GUIStyle?    s_toggleStyle;
-        private static GUIStyle?    s_minusButtonStyle;
-        private        Rect         m_createRect;
+        private        int       m_selectedField;
+        private static GUIStyle? s_toggleStyle;
+        private static GUIStyle? s_minusButtonStyle;
+        private        Rect      m_createRect;
 
+        private static readonly string[] Exclude = {"m_fields"};
+        
         public override void OnInspectorGUI()
         {
             Config config = (Config)target;
@@ -23,8 +25,7 @@ namespace SeweralIdeas.Config.Editor
             s_toggleStyle ??= new GUIStyle(EditorStyles.miniButton) { alignment = TextAnchor.LowerLeft };
             s_minusButtonStyle ??= new GUIStyle("OL Minus") { fixedWidth = 24 };
 
-            base.OnInspectorGUI();
-
+            DrawPropertiesExcluding(serializedObject, Exclude);
             
             StorageGUI(config);
 
@@ -35,6 +36,8 @@ namespace SeweralIdeas.Config.Editor
             {
                 FieldsGUI(config);
             }
+
+            serializedObject.ApplyModifiedProperties();
         }
         private static void StorageGUI(Config config)
         {
@@ -64,86 +67,108 @@ namespace SeweralIdeas.Config.Editor
             
             if(clicked)
             {
-                TypeDropdown.ShowTypeDropdown(m_createRect, new(typeof( ConfigField ), false, true), AddField);
+                TypeDropdown.ShowTypeDropdown(m_createRect, new(typeof( ConfigField ), false, true), type => AddField_Delayed(type, config));
             }
-
-
-            // ConfigField list
+            
             if(config.Fields.Count > 0)
             {
-                using (ListPool<ConfigField>.Get(out var configFields))
+                for( int i = 0; i < config.Fields.Count; ++i )
                 {
-                    foreach (var field in config.Fields)
-                    {
-                        if(!field)
-                            continue;
-                        configFields.Add(field);
-                    }
-                    configFields.Sort((lhs, rhs) => String.Compare(lhs.name, rhs.name, StringComparison.Ordinal));
-
-                    for( int i = 0; i < configFields.Count; ++i )
-                    {
-                        ConfigField field = configFields[i];
-                        GUIContent content = EditorGUIUtility.ObjectContent(field, field.GetType());
-                        content.text = field.name;
-
-                        using (new GUILayout.HorizontalScope())
-                        {
-                            bool newSelected = GUILayout.Toggle(s_selectedField == field, content, s_toggleStyle);
-                            if(newSelected)
-                                s_selectedField = field;
-
-                            if(GUILayout.Button(GUIContent.none, s_minusButtonStyle))
-                            {
-                                RemoveField(field);
-                            }
-                        }
-                    }
+                    FieldGUI(config, i);
                 }
             }
             
-            // Selected field editor
-            if(s_selectedField != null && config.Fields.Contains(s_selectedField))
-            {
-                GUILayout.BeginVertical(GUIContent.none, "box");
-                // string newName = EditorGUILayout.DelayedTextField("Name", s_selectedField.name);
-                // if(newName != s_selectedField.name)
-                // {
-                //     Undo.RegisterCompleteObjectUndo(s_selectedField, "Rename ConfigField");
-                //     s_selectedField.name = newName;
-                // }
+            SelectedFieldGUI(config);
+        }
+        
+        private void FieldGUI(Config config, int index)
+        {
+            ConfigField field = config.Fields[index];
+            GUIContent content = EditorGUIUtility.ObjectContent(field, field.GetType());
+            content.text = field.name;
 
-                UnityEditor.Editor editor = CreateEditor(s_selectedField);
-                editor.OnInspectorGUI();
-                if(editor.serializedObject.hasModifiedProperties)
-                {   
-                    editor.serializedObject.ApplyModifiedProperties();
-                    Undo.RegisterCompleteObjectUndo(s_selectedField, "Rename ConfigField");
-                    s_selectedField.name = s_selectedField.Key;
+            using (new GUILayout.HorizontalScope())
+            {
+                bool newSelected = GUILayout.Toggle(m_selectedField == index, content, s_toggleStyle);
+                if(newSelected)
+                    m_selectedField = index;
+
+                if(GUILayout.Button(GUIContent.none, s_minusButtonStyle))
+                {
+                    EditorApplication.delayCall += () => RemoveField_Delayed(config, index);
                 }
-                GUILayout.EndVertical();
             }
         }
 
-        private void RemoveField(ConfigField field)
+        private void SelectedFieldGUI(Config config)
         {
-            Undo.DestroyObjectImmediate(field);
-            SaveAndRefresh();
+            static bool Contains(IReadOnlyList<ConfigField> list, ConfigField field)
+            {
+                int count = list.Count;
+                for(int i = 0; i< count; ++i)
+                    if(list[i] == field)
+                        return true;
+                return false;
+            }
+            
+            // Selected field editor
+            if(m_selectedField < 0 || m_selectedField >= config.Fields.Count)
+                return;
+            ConfigField selectedFieldObj = config.Fields[m_selectedField];
+            
+            GUILayout.BeginVertical(GUIContent.none, "box");
+            
+            string newName = EditorGUILayout.DelayedTextField("Name", selectedFieldObj.name);
+            if(newName != selectedFieldObj.name)
+            {
+                Undo.RegisterCompleteObjectUndo(selectedFieldObj, "Rename ConfigField");
+                selectedFieldObj.name = newName;
+            }
+
+            if(selectedFieldObj)
+            {
+                UnityEditor.Editor editor = CreateEditor(selectedFieldObj);
+                editor.OnInspectorGUI();
+                editor.serializedObject.ApplyModifiedProperties();
+            }
+            GUILayout.EndVertical();
         }
 
-        private void AddField(Type type)
+        private static void RemoveField_Delayed(Config config, int index)
         {
+            Undo.RegisterCompleteObjectUndo(config,"Remove Field");
+            SerializedObject sObj = new SerializedObject(config);
+            
+            SerializedProperty? fieldsArrayProp = sObj.FindProperty("m_fields");
+            SerializedProperty? fieldProp = fieldsArrayProp.GetArrayElementAtIndex(index);
+            ConfigField? field = fieldProp.objectReferenceValue as ConfigField;
+            fieldsArrayProp.DeleteArrayElementAtIndex(index);
+            
+            if(field != null)
+                Undo.DestroyObjectImmediate(field);
+            
+            sObj.ApplyModifiedProperties();
+            SaveAndRefresh();
+        }
+        
+        private void AddField_Delayed(Type type, Config config)
+        {
+            SerializedObject sObj = new SerializedObject(config);
+            
             ConfigField newField = (ConfigField)CreateInstance(type);
             newField.name = type.Name;
-            using var so = new SerializedObject(newField);
-            SerializedProperty configProp = so.FindProperty("m_config");
-            configProp.objectReferenceValue = target;
-            so.ApplyModifiedProperties();
-            AssetDatabase.AddObjectToAsset(newField, target);
-            serializedObject.ApplyModifiedProperties();
-            SaveAndRefresh();
+            AssetDatabase.AddObjectToAsset(newField, config);
             Undo.RegisterCreatedObjectUndo(newField, "Created ConfigField");
-            s_selectedField = newField;
+
+            SerializedProperty? fieldsArrayProp = sObj.FindProperty("m_fields");
+            int index = fieldsArrayProp.arraySize;
+            fieldsArrayProp.InsertArrayElementAtIndex(index);
+            SerializedProperty? fieldProp = fieldsArrayProp.GetArrayElementAtIndex(index);
+            fieldProp.objectReferenceValue = newField;
+            m_selectedField = index;
+            
+            sObj.ApplyModifiedProperties();
+            SaveAndRefresh();
         }
         
         private static void SaveAndRefresh()

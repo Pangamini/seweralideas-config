@@ -5,6 +5,6 @@ namespace SeweralIdeas.Config
     {
         public abstract bool Save(Config config);
         public abstract bool PreLoad(Config config);
-        public abstract void LoadField(ConfigField field);
+        public abstract void LoadField(string key, ConfigField field);
     }
 }

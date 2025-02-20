@@ -16,10 +16,10 @@ namespace SeweralIdeas.Config
         
         public override bool Save(Config config)
         {
-            foreach (ConfigField field in config.Fields)
+            foreach (var field in config.Fields)
             {
                 string strVal = field.GetStringValue();
-                PlayerPrefs.SetString(GetFieldKey(field), strVal);
+                PlayerPrefs.SetString(field.name, strVal);
             }
             PlayerPrefs.Save();
             return true;
@@ -27,16 +27,15 @@ namespace SeweralIdeas.Config
         
         public override bool PreLoad(Config config) => true;
 
-        public override void LoadField(ConfigField field)
+        public override void LoadField(string key, ConfigField field)
         {
-            string? str = PlayerPrefs.GetString(GetFieldKey(field));
-            if(str == null || !field.SetStringValue(str))
+            if(PlayerPrefs.HasKey(key))
             {
-                field.SetDefaultValue();
+                string str = PlayerPrefs.GetString(key);
+                if(str != null && field.SetStringValue(str))
+                    return;
             }
+            field.SetDefaultValue();
         }
-        
-        private string GetFieldKey(ConfigField field) => $"{field.Config!.GlobalName}.{field.Key}";
-
     }
 }
