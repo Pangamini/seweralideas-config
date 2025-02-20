@@ -27,12 +27,12 @@ namespace SeweralIdeas.Config
                 UnescapedChars.Add(pair.Value, pair.Key);
         }
 
-        public override void LoadField(ConfigField field)
+        public override void LoadField(string key, ConfigField field)
         {
-            if(m_loadedStringValues.TryGetValue(field.Key, out string stringValue))
+            if(m_loadedStringValues.TryGetValue(key, out string stringValue))
             {
                 field.SetStringValue(stringValue);
-                m_loadedStringValues.Remove(field.Key);
+                m_loadedStringValues.Remove(key);
                 return;
             }
             
@@ -112,32 +112,31 @@ namespace SeweralIdeas.Config
             using var writer = new StreamWriter(stream, StreamEncoding);
             using (ListPool<ConfigField>.Get(out var fields))
             {
-                foreach(var field in config.Fields)
-                    fields.Add(field);
+                foreach(var pair in config.Fields)
+                    fields.Add(pair);
                 
-                fields.Sort((lhs, rhs) => String.Compare(lhs.Key, rhs.Key, StringComparison.Ordinal));
+                fields.Sort((lhs, rhs) => String.Compare(lhs.name, rhs.name, StringComparison.Ordinal));
                 
                 using var enumerator = fields.GetEnumerator();
 
-                void WriteField(ConfigField configField)
+                void WriteField(ConfigField field)
                 {
-                    string key = configField.Key;
-                    string value = configField.GetStringValue();
-                    WriteEscaped(writer, key);
+                    string value = field.GetStringValue();
+                    WriteEscaped(writer, field.name);
                     writer.Write(" = ");
                     WriteEscaped(writer, value);
                 }
 
                 if(enumerator.MoveNext())
                 {
-                    ConfigField? current = enumerator.Current;
+                    var current = enumerator.Current;
                     if(current != null)
                         WriteField(current);
                 }
 
                 while(enumerator.MoveNext())
                 {
-                    ConfigField? current = enumerator.Current;
+                    var current = enumerator.Current;
                     if(current == null)
                         continue;
 
