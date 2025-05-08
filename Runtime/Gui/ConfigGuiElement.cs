@@ -27,10 +27,10 @@ namespace SeweralIdeas.ConfigGui
             }
         }
 
-        private ConfigField<T>? RegisteredField
+        protected ConfigField<T>? RegisteredField
         {
             get => m_registeredField;
-            set
+            private set
             {
                 if (m_registeredField != null)
                     m_registeredField.ValueChanged -= OnFieldValueChanged;
@@ -51,19 +51,19 @@ namespace SeweralIdeas.ConfigGui
                 m_field.Value = guiValue;
         }
         
-        protected void OnEnable()
+        protected virtual void OnEnable()
         {
             m_enabled = true;
             RegisteredField = Field;
         }
 
-        protected void OnDisable()
+        protected virtual void OnDisable()
         {
             RegisteredField = null;
             m_enabled = false;
         }
 
-        protected void OnValidate()
+        protected virtual void OnValidate()
         {
             if (!m_enabled)
                 return;
