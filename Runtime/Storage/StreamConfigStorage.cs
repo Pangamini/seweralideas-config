@@ -39,7 +39,7 @@ namespace SeweralIdeas.Config
             field.SetDefaultValue();
         }
 
-        public override sealed bool PreLoad(Config config)
+        public sealed override bool PreLoad(Config config)
         {
             m_loadedStringValues.Clear();
             
@@ -57,7 +57,8 @@ namespace SeweralIdeas.Config
             {
                 string value = sb.ToString();
                 sb.Clear();
-                m_loadedStringValues.Add(key ?? throw new InvalidOperationException(), value);
+                if(!string.IsNullOrWhiteSpace(key))
+                    m_loadedStringValues.Add(key, value);
                 key = null;
             }
             
