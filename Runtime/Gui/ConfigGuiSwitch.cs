@@ -15,6 +15,14 @@ namespace SeweralIdeas.ConfigGui
             public Toggle m_toggle;
         }
 
+        protected void Start()
+        {
+            var group = gameObject.AddComponent<ToggleGroup>();
+            group.allowSwitchOff = false;
+            foreach (var option in m_options)
+                option.m_toggle.group = group;
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
