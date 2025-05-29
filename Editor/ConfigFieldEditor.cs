@@ -7,7 +7,7 @@ namespace SeweralIdeas.Config.Editor
     [CustomEditor(typeof(ConfigField), true)]
     public class ConfigFieldEditor : UnityEditor.Editor
     {
-        private static readonly string[] Exclude = {"m_Script"};
+        private static readonly string[] Exclude = {"m_Script", "m_config"};
         
         public override void OnInspectorGUI()
         {

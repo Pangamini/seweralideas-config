@@ -13,6 +13,7 @@ namespace SeweralIdeas.Config
 
     public abstract class ConfigField : ScriptableObject
     {
+        [SerializeField] private Config m_config;
         protected void OnChanged() => Changed?.Invoke();
         public event Action? Changed;
         public virtual float GetGUIHeight() => 24;

@@ -38,7 +38,7 @@ namespace SeweralIdeas.Config
         public string GlobalName => m_globalName ?? string.Empty;
         public ConfigStoragePlan? StoragePlan => m_storagePlan;
 
-        private void OnEnable()
+        protected void OnEnable()
         {
             SetRegisteredFields(m_fields);
             UpdateAutoSaveHooks();

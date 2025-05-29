@@ -146,17 +146,21 @@ namespace SeweralIdeas.Config.Editor
             
             if(field != null)
                 Undo.DestroyObjectImmediate(field);
-            
             sObj.ApplyModifiedProperties();
+            
             SaveAndRefresh();
         }
         
         private void AddField_Delayed(Type type, Config config)
         {
-            SerializedObject sObj = new SerializedObject(config);
+            using SerializedObject sObj = new (config);
             
             ConfigField newField = (ConfigField)CreateInstance(type);
             newField.name = type.Name;
+            using SerializedObject fieldsSObj = new(newField);
+            fieldsSObj.FindProperty("m_config").objectReferenceValue = config;
+            fieldsSObj.ApplyModifiedProperties();
+            
             AssetDatabase.AddObjectToAsset(newField, config);
             Undo.RegisterCreatedObjectUndo(newField, "Created ConfigField");
 
