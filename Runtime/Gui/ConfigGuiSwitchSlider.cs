@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace SeweralIdeas.ConfigGui
 {
-    public class ConfigGuiSlider : ConfigGuiElement<string, StringConfigField>
+    public class ConfigGuiSwitchSlider : ConfigGuiElement<string, StringConfigField>
     {
         [SerializeField] private Option[]   m_options;
         [SerializeField] private Slider     m_slider = default!;
