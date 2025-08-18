@@ -1,10 +1,11 @@
 using System;
+using SeweralIdeas.Config;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SeweralIdeas.ConfigGui
 {
-    public class ConfigGuiSwitch : ConfigGuiElement<string>
+    public class ConfigGuiSwitch : ConfigGuiElement<string, StringConfigField>
     {
         [SerializeField] private Option[] m_options = Array.Empty<Option>();
         

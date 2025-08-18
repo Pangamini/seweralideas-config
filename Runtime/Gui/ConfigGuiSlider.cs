@@ -1,12 +1,13 @@
 #nullable enable
 using System.Globalization;
+using SeweralIdeas.Config;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace SeweralIdeas.ConfigGui
 {
-    public class ConfigGuiSlider : ConfigGuiElement<float>
+    public class ConfigGuiSlider : ConfigGuiElement<float, FloatConfigField>
     {
         [SerializeField] private Slider             m_slider = default!;
         [SerializeField] private string             m_numberFormat = "{0:F2}";
