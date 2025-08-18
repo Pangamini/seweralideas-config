@@ -1,33 +1,34 @@
 #nullable enable
 using SeweralIdeas.Config;
 using UnityEngine;
+
 namespace SeweralIdeas.ConfigGui
 {
     public abstract class ConfigGuiElement : MonoBehaviour
     {
     }
-    
-    public abstract class ConfigGuiElement<T> : ConfigGuiElement
-    {
-        [SerializeField] private ConfigField<T>? m_field;
-        private                  ConfigField<T>? m_registeredField;
-        private                  bool            m_enabled;
 
-        public ConfigField<T>? Field
+    public abstract class ConfigGuiElement<T, TField> : ConfigGuiElement where TField : ConfigField<T>
+    {
+        [SerializeField] private TField? m_field;
+        private                  TField? m_registeredField;
+        private                  bool    m_enabled;
+
+        public TField? Field
         {
             get => m_field;
             set
             {
                 if (m_field == value)
                     return;
-                
+
                 m_field = value;
                 if (m_enabled)
                     RegisteredField = m_field;
             }
         }
 
-        protected ConfigField<T>? RegisteredField
+        protected TField? RegisteredField
         {
             get => m_registeredField;
             private set
@@ -47,10 +48,10 @@ namespace SeweralIdeas.ConfigGui
 
         protected void OnGuiValueChanged(T guiValue)
         {
-            if(m_field != null)
+            if (m_field != null)
                 m_field.Value = guiValue;
         }
-        
+
         protected virtual void OnEnable()
         {
             m_enabled = true;

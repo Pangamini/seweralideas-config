@@ -1,10 +1,11 @@
 #nullable enable
+using SeweralIdeas.Config;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SeweralIdeas.ConfigGui
 {
-    public class ConfigGuiToggle : ConfigGuiElement<bool>
+    public class ConfigGuiToggle : ConfigGuiElement<bool, BoolConfigField>
     {
         [SerializeField] private Toggle m_toggle = default!;
         

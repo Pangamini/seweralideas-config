@@ -7,15 +7,15 @@ using UnityEngine.UI;
 
 namespace SeweralIdeas.ConfigGui
 {
-    public class ConfigGuiSlider : ConfigGuiElement<float, FloatConfigField>
+    public class ConfigGuiIntSlider : ConfigGuiElement<int, IntConfigField>
     {
-        [SerializeField] private Slider             m_slider = default!;
+        [SerializeField] private Slider             m_slider       = default!;
         [SerializeField] private string             m_numberFormat = "{0:F2}";
-        [SerializeField] private UnityEvent<string> m_textOutput = new();
+        [SerializeField] private UnityEvent<string> m_textOutput   = new();
         
-        private Utils.CachedStringFormatter<float> m_stringFormatter;
+        private Utils.CachedStringFormatter<int> m_stringFormatter;
         
-        protected override void OnFieldValueChanged(float value)
+        protected override void OnFieldValueChanged(int value)
         {
             m_slider.value = value;
             TryUpdateText();
@@ -41,13 +41,15 @@ namespace SeweralIdeas.ConfigGui
         protected void Awake()
         {
             m_stringFormatter = new (m_numberFormat, CultureInfo.InvariantCulture);
-            m_slider.onValueChanged.AddListener(OnGuiValueChanged);
+            m_slider.onValueChanged.AddListener(OnSliderValueChanged);
             TryUpdateText();
         }
 
         protected void OnDestroy()
         {
-            m_slider.onValueChanged.RemoveListener(OnGuiValueChanged);
+            m_slider.onValueChanged.RemoveListener(OnSliderValueChanged);
         }
+
+        private void OnSliderValueChanged(float val) => OnGuiValueChanged(Mathf.RoundToInt(val));
     }
 }
