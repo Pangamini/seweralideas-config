@@ -6,24 +6,9 @@ namespace SeweralIdeas.Config
 {
     public class BoolConfigField : ConfigField<bool>
     {
-        public override string GetStringValue()
-        {
-            return Value.ToString(CultureInfo.InvariantCulture);
-        }
+        public override string GetStringValue() => Value.ToString(CultureInfo.InvariantCulture);
 
-        public override bool SetStringValue(string value)
-        {
-            if(!bool.TryParse(value, out var boolValue))
-                return false;
-            
-            Value = boolValue;
-            return true;
-        }
-
-
-        public override void OnConfigGUI(Rect rect)
-        {
-            Value = GUI.Toggle(rect, Value, "");
-        }
+        public override bool TryParse(string stringValue, out bool value) => bool.TryParse(stringValue, out value);
+        public override void OnConfigGUI(Rect rect) => Value = GUI.Toggle(rect, Value, "");
     }
 }

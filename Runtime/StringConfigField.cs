@@ -6,17 +6,7 @@ namespace SeweralIdeas.Config
 {
     public class StringConfigField : ConfigField<string>
     {
-        public override string GetStringValue()
-        {
-            return Value;
-        }
-
-        public override bool SetStringValue(string value)
-        {
-            Value = value;
-            return true;
-        }
-
+        public override string GetStringValue() => Value;
 
         public override void OnConfigGUI(Rect rect)
         {
@@ -26,6 +16,12 @@ namespace SeweralIdeas.Config
         public override float GetGUIHeight()
         {
             return 24 * 8;
+        }
+
+        public override bool TryParse(string stringValue, out string value)
+        {
+            value = stringValue;
+            return true;
         }
     }
 }

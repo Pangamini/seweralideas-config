@@ -19,18 +19,11 @@ namespace SeweralIdeas.Config
             return Value.ToString(CultureInfo.InvariantCulture);
         }
 
-        public override bool SetStringValue(string value)
-        {
-            if(!int.TryParse(value, out int intValue))
-                return false;
-            
-            Value = intValue;
-            return true;
-        }
+        public override bool TryParse(string stringValue, out int value) => int.TryParse(stringValue, out value);
 
         public override void OnConfigGUI(Rect rect)
         {
-            if (int.TryParse(SeweralGUI.DelayedTextField(rect, Value.ToString(CultureInfo.InvariantCulture)), out int newValue))
+            if (TryParse(SeweralGUI.DelayedTextField(rect, Value.ToString(CultureInfo.InvariantCulture)), out int newValue))
                 Value = newValue;
         }
     }
