@@ -23,6 +23,7 @@ namespace SeweralIdeas.Config
         public abstract void SetDefaultValue();
         public abstract string? StringValue { get; }
         public abstract object? GetValue();
+        public abstract bool StringValueEquals(string value);
     }
     
     public abstract class ConfigField<T> : ConfigField, IConfigValue<T>
@@ -36,6 +37,24 @@ namespace SeweralIdeas.Config
 
         public override string? StringValue => Value?.ToString()??null;
 
+        public abstract bool TryParse(string stringValue, out T value);
+
+        public override bool StringValueEquals(string stringValue)
+        {
+            if (!TryParse(stringValue, out var value))
+                return false;
+            return ValueEquals(value, m_value);
+        }
+
+        public sealed override bool SetStringValue(string value)
+        {
+            if(!TryParse(value, out var boolValue))
+                return false;
+            
+            Value = boolValue;
+            return true;
+        }
+        
         public T Value
         {
             get => m_value;
@@ -48,7 +67,7 @@ namespace SeweralIdeas.Config
                 }
                 else
                 {
-                    if (EqualityComparer<T>.Default.Equals(m_value, value!))
+                    if (ValueEquals(value, m_value))
                         return;
                 }
                 
@@ -57,6 +76,8 @@ namespace SeweralIdeas.Config
                 OnChanged();
             }
         }
+
+        public bool ValueEquals(T lhs, T rhs) => EqualityComparer<T>.Default.Equals(lhs, rhs);
 
         public override object? GetValue() => Value;
     }

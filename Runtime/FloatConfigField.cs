@@ -13,24 +13,14 @@ namespace SeweralIdeas.Config
             set => Value = value;
         }
 
-        public override string GetStringValue()
-        {
-            return Value.ToString(CultureInfo.InvariantCulture);
-        }
+        public override string GetStringValue() => Value.ToString(CultureInfo.InvariantCulture);
 
-        public override bool SetStringValue(string value)
-        {
-            if(!float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatValue))
-                return false;
-            
-            Value = floatValue;
-            return true;
-        }
+        public override bool TryParse(string stringValue, out float value) => float.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
 
         public override void OnConfigGUI(Rect rect)
         {
             string newStrVal = SeweralGUI.DelayedTextField(rect, Value.ToString(CultureInfo.InvariantCulture));
-            if (float.TryParse(newStrVal, NumberStyles.Any, CultureInfo.InvariantCulture, out float newValue))
+            if (TryParse(newStrVal, out float newValue))
                 Value = newValue;
         }
     }
