@@ -8,9 +8,9 @@ namespace SeweralIdeas.ConfigGui
 {
     public class ConfigGuiSwitchSlider : ConfigGuiElement<string, StringConfigField>
     {
-        [SerializeField] private Option[]   m_options;
+        [SerializeField] private Option[]   m_options = default!;
         [SerializeField] private Slider     m_slider = default!;
-        [SerializeField] private GameObject m_activeWhenValidValue;
+        [SerializeField] private GameObject? m_activeWhenValidValue;
         
         [Serializable]
         public struct Option

@@ -13,7 +13,9 @@ namespace SeweralIdeas.Config
 
     public abstract class ConfigField : ScriptableObject
     {
-        [SerializeField] private Config m_config;
+#pragma warning disable CS0414 // set by ConfigEditor via SerializedProperty; not yet read from code
+        [SerializeField] private Config m_config = null!;
+#pragma warning restore CS0414
         protected void OnChanged() => Changed?.Invoke();
         public event Action? Changed;
         public virtual float GetGUIHeight() => 24;
