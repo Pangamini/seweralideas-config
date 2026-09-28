@@ -102,15 +102,6 @@ namespace SeweralIdeas.Config.Editor
 
         private void SelectedFieldGUI(Config config)
         {
-            static bool Contains(IReadOnlyList<ConfigField> list, ConfigField field)
-            {
-                int count = list.Count;
-                for(int i = 0; i< count; ++i)
-                    if(list[i] == field)
-                        return true;
-                return false;
-            }
-            
             // Selected field editor
             if(m_selectedField < 0 || m_selectedField >= config.Fields.Count)
                 return;
