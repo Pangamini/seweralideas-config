@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UnityEngine;
 using UnityEngine.Pool;
 namespace SeweralIdeas.Config
 {
@@ -27,7 +28,7 @@ namespace SeweralIdeas.Config
                 UnescapedChars.Add(pair.Value, pair.Key);
         }
 
-        public override void LoadField(string key, ConfigField field)
+        public override void LoadField(Config config, string key, ConfigField field)
         {
             if(m_loadedStringValues.TryGetValue(key, out string stringValue))
             {
@@ -46,7 +47,23 @@ namespace SeweralIdeas.Config
             using var stream = CreateReadStream(config);
             if(stream == null)
                 return false;
-            
+
+            try
+            {
+                Parse(stream);
+                return true;
+            }
+            catch (Exception e)
+            {
+                // Damaged data: none of it is used, so every field gets its default, and the next save replaces it.
+                m_loadedStringValues.Clear();
+                Debug.LogError($"Config {config.GlobalName} could not be read, its fields get their default values: {e.Message}", config);
+                return false;
+            }
+        }
+
+        private void Parse(Stream stream)
+        {
             using var reader = new StreamReader(stream, StreamEncoding);
 
             string? key = null;
@@ -103,10 +120,8 @@ namespace SeweralIdeas.Config
                 }
 
             }
-
-            return true;
         }
-        
+
         public override sealed bool Save(Config config)
         {
             using var stream = CreateWriteStream(config);
@@ -114,7 +129,7 @@ namespace SeweralIdeas.Config
             using (ListPool<ConfigField>.Get(out var fields))
             {
                 foreach(var pair in config.Fields)
-                    fields.Add(pair);
+                    if(pair != null) fields.Add(pair); // (an entry left empty by a removed field is skipped)
                 
                 fields.Sort((lhs, rhs) => String.Compare(lhs.name, rhs.name, StringComparison.Ordinal));
                 

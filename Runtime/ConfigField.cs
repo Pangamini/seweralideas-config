@@ -18,8 +18,19 @@ namespace SeweralIdeas.Config
 #pragma warning restore CS0414
         protected void OnChanged() => Changed?.Invoke();
         public event Action? Changed;
+
+        // The runtime state of a freshly loaded asset: no value, and no listeners (see Config.ResetRuntimeState).
+        internal virtual void ResetRuntimeState() => Changed = null;
         public virtual float GetGUIHeight() => 24;
         public virtual void OnConfigGUI(Rect rect) { }
+
+        /// <summary>The height of <see cref="OnConfigRowGUI"/>: for showing the value in a list of fields, where a field that
+        /// needs more room than a line (text, say) shows a compact version. The full one is the same as <see cref="GetGUIHeight"/>.</summary>
+        public virtual float GetRowHeight() => GetGUIHeight();
+
+        /// <summary>The value, compact enough for a row of a list of fields. By default the same as <see cref="OnConfigGUI"/>.</summary>
+        public virtual void OnConfigRowGUI(Rect rect) => OnConfigGUI(rect);
+
         public abstract string GetStringValue();
         public abstract bool SetStringValue(string value);
         public abstract void SetDefaultValue();
@@ -34,7 +45,14 @@ namespace SeweralIdeas.Config
         private                  T m_value = default!;
         
         public event Action<T>? ValueChanged;
-        
+
+        internal override void ResetRuntimeState()
+        {
+            base.ResetRuntimeState();
+            ValueChanged = null;
+            m_value = default!;
+        }
+
         public override void SetDefaultValue() => Value = m_defaultValue;
 
         public override string? StringValue => Value?.ToString()??null;
