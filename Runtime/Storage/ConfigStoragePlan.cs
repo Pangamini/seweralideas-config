@@ -1,32 +1,26 @@
 #nullable enable
-using System;
-using SeweralIdeas.UnityUtils;
 using UnityEngine;
 
 namespace SeweralIdeas.Config
 {
-    [Serializable]
-    public abstract class StorageDescription
-    {
-        public abstract bool Available { get; }
-        public abstract ConfigStorage GetStorage();
-    }
-    
+    /// <summary>
+    /// Where a <see cref="Config"/> is stored: the first of the descriptions that is available on the platform is used.
+    /// The descriptions are assets (Create > SeweralIdeas > Config > ...), put in the list in order of preference.
+    /// </summary>
     [CreateAssetMenu(menuName = "SeweralIdeas/"+nameof(ConfigStoragePlan))]
     public class ConfigStoragePlan : ScriptableObject
     {
-        [InstantiateGUI(typeof( StorageDescription ))]
-        [SerializeReference]
+        [SerializeField]
         private StorageDescription[]? m_descriptions;
-        
+
         public ConfigStorage? CreateAvailableStorage()
         {
             if(m_descriptions == null)
                 return null;
-            
+
             foreach (StorageDescription storageDescription in m_descriptions)
             {
-                if(!storageDescription.Available)
+                if(storageDescription == null || !storageDescription.Available)
                     continue;
                 return storageDescription.GetStorage();
             }

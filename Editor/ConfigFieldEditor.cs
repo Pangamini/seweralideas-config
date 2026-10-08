@@ -12,8 +12,13 @@ namespace SeweralIdeas.Config.Editor
         public override void OnInspectorGUI()
         {
             ConfigField field = (ConfigField)target;
+
+            // Applied here, not by whoever draws this editor: selected on its own in the Project window, nobody else would,
+            // and the edits to the serialized properties (the default value, say) would never reach the asset.
+            serializedObject.Update();
             DrawPropertiesExcluding(serializedObject, Exclude);
-            
+            serializedObject.ApplyModifiedProperties();
+
             using (new GUILayout.VerticalScope("box"))
             {
                 GUILayout.Label("Value:");

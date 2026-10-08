@@ -12,7 +12,7 @@ namespace SeweralIdeas.Config
         [SerializeField] private string? m_globalName;
         [SerializeField] private bool    m_autoLoadSave;
         
-        [SerializeReference]
+        [SerializeField]
         private ConfigStoragePlan? m_storagePlan;
 
         // [Serializable]
@@ -49,10 +49,51 @@ namespace SeweralIdeas.Config
         protected void OnDisable()
         {
             SetRegisteredFields(null);
+
+            // The quitting event is static: left subscribed, the handler would outlive the asset's enabled state (and, without
+            // a domain reload, pile up with the next OnEnable's).
+            if(m_autoSaveHooked)
+            {
+                Application.quitting -= OnQuitWithAutoSave;
+                m_autoSaveHooked = false;
+            }
         }
+
+        // Puts the runtime state back to what a freshly loaded asset has: the fields without their values and listeners, nothing
+        // unsaved, and OnEnable's registering, hooking and (auto) loading done again.
+        private void ResetRuntimeState()
+        {
+            foreach (ConfigField field in m_fields)
+            {
+                if(field != null)
+                    field.ResetRuntimeState();
+            }
+
+            OnDisable();
+            m_dirty = false;
+            OnEnable();
+        }
+
+        #if UNITY_EDITOR
+        // With the domain reload on entering play mode switched off, the assets that are loaded keep the runtime state of
+        // the previous session: field values, listeners of destroyed objects, a dirty flag. A new domain would have none of
+        // it, and a build never has any, so each session starts by resetting it - and only then, as a reload has done it.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetLoadedConfigsWithoutDomainReload()
+        {
+            bool domainReloaded = !UnityEditor.EditorSettings.enterPlayModeOptionsEnabled
+                                  || (UnityEditor.EditorSettings.enterPlayModeOptions & UnityEditor.EnterPlayModeOptions.DisableDomainReload) == 0;
+            if(domainReloaded)
+                return;
+
+            foreach (Config config in Resources.FindObjectsOfTypeAll<Config>())
+                config.ResetRuntimeState();
+        }
+        #endif
 
         private void OnValidate()
         {
+            m_fields.RemoveAll(field => field == null); // entries left empty by a removed field (see ConfigEditor)
             SetRegisteredFields(m_fields);
             UpdateAutoSaveHooks();
         }
@@ -110,33 +151,70 @@ namespace SeweralIdeas.Config
             m_globalName = name;
         }
         
-        private ConfigStorage GetStorage()
+        private ConfigStorage? GetStorage() => m_storagePlan != null ? m_storagePlan.CreateAvailableStorage() : null;
+
+        #if UNITY_EDITOR
+        /// <summary>Shows where the config is stored now (in the storage that is available, as for Save and Load) in the file browser or regedit.</summary>
+        public void RevealStorageInEditor()
         {
-            var currentStorage = m_storagePlan != null ? m_storagePlan.CreateAvailableStorage() : null;
-            return currentStorage ?? throw new InvalidOperationException("Storage is null");
+            var storage = GetStorage();
+            if(storage == null)
+                Debug.LogWarning($"Config {GlobalName} has no storage available, so there is nothing to show.", this);
+            else
+                storage.RevealInEditor(this);
         }
-        
+        #endif
+
+        /// <summary>
+        /// Saves the fields to the storage if anything changed since the last save or load. Without an available storage
+        /// there is nowhere to save to: it warns and leaves the config dirty, and does not throw, as this runs when quitting.
+        /// </summary>
         public void Save()
         {
             if(!IsDirty)
                 return;
 
             var storage = GetStorage();
+            if(storage == null)
+            {
+                Debug.LogWarning($"Config {GlobalName} has no storage available on this platform, so it is not saved.", this);
+                return;
+            }
+
             Debug.Log($"Saving Config {GlobalName} to {storage}", this);
             storage.Save(this);
             m_dirty = false;
         }
 
+        /// <summary>
+        /// Loads the fields from the storage, the ones it has no value for getting their default. Without an available
+        /// storage nothing is stored, so every field gets its default.
+        /// </summary>
         public void Load()
         {
             var storage = GetStorage();
+            if(storage == null)
+            {
+                Debug.LogWarning($"Config {GlobalName} has no storage available on this platform, so its fields have their default values.", this);
+                foreach (var field in m_fields)
+                {
+                    if(field != null)
+                        field.SetDefaultValue();
+                }
+                m_dirty = false;
+                return;
+            }
+
             Debug.Log($"Loading Config {GlobalName} from {storage}", this);
 
             storage.PreLoad(this);
 
             foreach (var field in m_fields)
-                storage.LoadField(field.name, field);
-            
+            {
+                if(field != null) // an entry left empty by a removed field
+                    storage.LoadField(this, field.name, field);
+            }
+
             m_dirty = false;
         }
     }
