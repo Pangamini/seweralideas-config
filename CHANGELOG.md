@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0]
 ### Changed
 - **Config no longer depends on UnityUtils**, in its runtime or its editor: no asmdef of Config references another seweralideas assembly. The delayed text field of the numeric and string fields is an internal copy (`DelayedText`), and the editors pick a type to add with their own `GenericMenu` list (`TypeMenu`) in place of UnityUtils' `TypeDropdown` (no icons, no search).
 - **The IMGUI parts need the built-in IMGUI module.** `ConfigField.GetGUIHeight` / `OnConfigGUI` / `GetRowHeight` / `OnConfigRowGUI` (and their overrides) and `ConfigDebugGUI` are compiled only where `com.unity.modules.imgui` is enabled (the asmdef sets `SEWERALIDEAS_CONFIG_IMGUI`). The editor assembly (`SeweralIdeas.Config.Editor`) needs it too, as it draws them.
