@@ -1,7 +1,7 @@
 {
     "name": "SeweralIdeas.Config",
     "rootNamespace": "SeweralIdeas.Config",
-    "references": ["GUID:cf5a3647f2623f044943c7d12af0b6c4"],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -9,6 +9,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.modules.imgui",
+            "expression": "",
+            "define": "SEWERALIDEAS_CONFIG_IMGUI"
+        }
+    ],
     "noEngineReferences": false
 }

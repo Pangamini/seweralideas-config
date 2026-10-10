@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System.Globalization;
-using SeweralIdeas.UnityUtils;
 using UnityEngine;
 
 namespace SeweralIdeas.Config
@@ -21,10 +20,12 @@ namespace SeweralIdeas.Config
 
         public override bool TryParse(string stringValue, out int value) => int.TryParse(stringValue, out value);
 
+#if SEWERALIDEAS_CONFIG_IMGUI
         public override void OnConfigGUI(Rect rect)
         {
-            if (TryParse(SeweralGUI.DelayedTextField(rect, Value.ToString(CultureInfo.InvariantCulture)), out int newValue))
+            if (TryParse(DelayedText.Field(rect, Value.ToString(CultureInfo.InvariantCulture)), out int newValue))
                 Value = newValue;
         }
+#endif
     }
 }

@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using SeweralIdeas.UnityUtils;
 using UnityEngine;
 
 namespace SeweralIdeas.Config
@@ -8,9 +7,10 @@ namespace SeweralIdeas.Config
     {
         public override string GetStringValue() => Value;
 
+#if SEWERALIDEAS_CONFIG_IMGUI
         public override void OnConfigGUI(Rect rect)
         {
-            Value = SeweralGUI.DelayedTextArea(rect, Value);
+            Value = DelayedText.Area(rect, Value);
         }
 
         public override float GetGUIHeight()
@@ -35,8 +35,9 @@ namespace SeweralIdeas.Config
                 return;
             }
 
-            Value = SeweralGUI.DelayedTextField(rect, text);
+            Value = DelayedText.Field(rect, text);
         }
+#endif
 
         public override bool TryParse(string stringValue, out string value)
         {

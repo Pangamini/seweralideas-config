@@ -2,9 +2,7 @@
     "name": "SeweralIdeas.Config.Editor",
     "rootNamespace": "SeweralIdeas.Config.Editor",
     "references": [
-        "GUID:9335601f754a4914c9a91b13cdffc91e",
-        "GUID:5351cf00130a51947b70be1b66be9753",
-        "GUID:cf5a3647f2623f044943c7d12af0b6c4"
+        "GUID:9335601f754a4914c9a91b13cdffc91e"
     ],
     "includePlatforms": [
         "Editor"
@@ -14,7 +12,15 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
+    "defineConstraints": [
+        "SEWERALIDEAS_CONFIG_IMGUI"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.modules.imgui",
+            "expression": "",
+            "define": "SEWERALIDEAS_CONFIG_IMGUI"
+        }
+    ],
     "noEngineReferences": false
 }
