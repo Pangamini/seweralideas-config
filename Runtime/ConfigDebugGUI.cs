@@ -1,3 +1,4 @@
+#if SEWERALIDEAS_CONFIG_IMGUI
 #nullable enable
 using System;
 using UnityEngine;
@@ -64,3 +65,4 @@ namespace SeweralIdeas.Config
         }
     }
 }
+#endif

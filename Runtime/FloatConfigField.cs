@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System.Globalization;
-using SeweralIdeas.UnityUtils;
 using UnityEngine;
 
 namespace SeweralIdeas.Config
@@ -19,11 +18,13 @@ namespace SeweralIdeas.Config
 
         public override bool TryParse(string stringValue, out float value) => float.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
 
+#if SEWERALIDEAS_CONFIG_IMGUI
         public override void OnConfigGUI(Rect rect)
         {
-            string newStrVal = SeweralGUI.DelayedTextField(rect, Value.ToString(CultureInfo.InvariantCulture));
+            string newStrVal = DelayedText.Field(rect, Value.ToString(CultureInfo.InvariantCulture));
             if (TryParse(newStrVal, out float newValue))
                 Value = newValue;
         }
+#endif
     }
 }

@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using SeweralIdeas.UnityUtils.Editor;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -85,7 +84,7 @@ namespace SeweralIdeas.Config.Editor
         private void OnAddDropdown(Rect buttonRect, ReorderableList list)
         {
             var plan = (ConfigStoragePlan)target;
-            TypeDropdown.ShowTypeDropdown(buttonRect, new(typeof(StorageDescription), false, true), type => AddDescription(plan, type));
+            TypeMenu.Show(buttonRect, typeof(StorageDescription), type => AddDescription(plan, type));
         }
 
         // Nested in the plan, and at the end of the list, which is the least preferred place.

@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+### Changed
+- **Config no longer depends on UnityUtils**, in its runtime or its editor: no asmdef of Config references another seweralideas assembly. The delayed text field of the numeric and string fields is an internal copy (`DelayedText`), and the editors pick a type to add with their own `GenericMenu` list (`TypeMenu`) in place of UnityUtils' `TypeDropdown` (no icons, no search).
+- **The IMGUI parts need the built-in IMGUI module.** `ConfigField.GetGUIHeight` / `OnConfigGUI` / `GetRowHeight` / `OnConfigRowGUI` (and their overrides) and `ConfigDebugGUI` are compiled only where `com.unity.modules.imgui` is enabled (the asmdef sets `SEWERALIDEAS_CONFIG_IMGUI`). The editor assembly (`SeweralIdeas.Config.Editor`) needs it too, as it draws them.
+- `ConfigGuiSlider` / `ConfigGuiIntSlider` can write their text straight to a `TMP_Text` (a new optional field, `m_tmpOutput`), through `TMP_Text.SetText(StringBuilder)`: the number is formatted into a stack buffer and a reused `StringBuilder`, so showing a value allocates no string. It exists where TextMeshPro is (`com.unity.ugui` 2.0+ or `com.unity.textmeshpro`; the asmdef sets `SEWERALIDEAS_CONFIG_TMP`). A new public `TextChanged` event adds and removes its listeners on `m_textOutput`, so code and the inspector share one `UnityEvent<string>`; the string is built only if something listens (a `UnityEvent` counts only the inspector's listeners, so `TextChanged` counts the others itself - subscribe through it, not through `AddListener`). The two sliders share this in a new base class, `ConfigGuiTextElement<T, TField>`.
+- The sliders format with an internal `ValueFormat` (a composite format string with one number, `"{0:F2} dB"`), no longer UnityUtils' `CachedStringFormatter`. The format strings behave the same, except that a format item has no alignment (`{0,5}`) and `{0}` is the only argument. The text is no longer cached between identical values.
+- **`SeweralIdeas.ConfigGui` (the uGUI components) needs both uGUI and IMGUI**, and is only compiled where `com.unity.ugui` and the IMGUI module are present. It references `UnityEngine.UI` explicitly.
+
+Upgrade: nothing in a project with the default modules. A project with the IMGUI module disabled loses `ConfigDebugGUI`, the `OnConfigGUI` family and the Config inspectors.
+
 ## [0.3.0]
 ### Added
 - A "Show" button next to Load and Save in the `Config` inspector: it opens the file of a file storage in the file browser (or the nearest folder that exists, as the file is made when the config is saved), and, for the PlayerPrefs storages, the PlayerPrefs of the editor - in regedit at the key of the project on Windows, and the plist or prefs file in the file browser on macOS and Linux. Each storage does it itself, in an editor-only (`#if UNITY_EDITOR`) abstract `ConfigStorage.RevealInEditor(config)`, which a custom storage has to implement; `Config.RevealStorageInEditor()` calls the one of the storage that is available. Regedit opens at the last key it showed, so one that is already open stays where it is.

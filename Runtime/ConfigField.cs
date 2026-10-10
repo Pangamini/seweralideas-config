@@ -21,6 +21,7 @@ namespace SeweralIdeas.Config
 
         // The runtime state of a freshly loaded asset: no value, and no listeners (see Config.ResetRuntimeState).
         internal virtual void ResetRuntimeState() => Changed = null;
+#if SEWERALIDEAS_CONFIG_IMGUI
         public virtual float GetGUIHeight() => 24;
         public virtual void OnConfigGUI(Rect rect) { }
 
@@ -30,6 +31,7 @@ namespace SeweralIdeas.Config
 
         /// <summary>The value, compact enough for a row of a list of fields. By default the same as <see cref="OnConfigGUI"/>.</summary>
         public virtual void OnConfigRowGUI(Rect rect) => OnConfigGUI(rect);
+#endif
 
         public abstract string GetStringValue();
         public abstract bool SetStringValue(string value);
@@ -66,7 +68,7 @@ namespace SeweralIdeas.Config
             return ValueEquals(value, m_value);
         }
 
-        public sealed override bool SetStringValue(string value)
+        public override sealed bool SetStringValue(string value)
         {
             if(!TryParse(value, out var boolValue))
                 return false;

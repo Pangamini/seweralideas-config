@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using SeweralIdeas.UnityUtils.Editor;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -176,7 +175,7 @@ namespace SeweralIdeas.Config.Editor
         private void OnAddDropdown(Rect buttonRect, ReorderableList list)
         {
             var config = (Config)target;
-            TypeDropdown.ShowTypeDropdown(buttonRect, new(typeof(ConfigField), false, true), type => AddField_Delayed(type, config));
+            TypeMenu.Show(buttonRect, typeof(ConfigField), type => AddField_Delayed(type, config));
         }
 
         private void OnRemove(ReorderableList list)
