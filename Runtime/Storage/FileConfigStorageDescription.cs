@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace SeweralIdeas.Config
 {
-    [CreateAssetMenu(menuName = "SeweralIdeas/Config/" + nameof(FileConfigStorageDescription))]
     public class FileConfigStorageDescription : StorageDescription
     {
         public enum RootFolder

@@ -6,7 +6,7 @@ using UnityEngine.Pool;
 
 namespace SeweralIdeas.Config
 {
-    [CreateAssetMenu(menuName = "SeweralIdeas/"+nameof(Config))]
+    [CreateAssetMenu(menuName = "SeweralIdeas/Config/"+nameof(Config))]
     public class Config : ScriptableObject
     {
         [SerializeField] private string? m_globalName;
