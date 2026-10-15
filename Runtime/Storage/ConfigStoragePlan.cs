@@ -7,7 +7,7 @@ namespace SeweralIdeas.Config
     /// Where a <see cref="Config"/> is stored: the first of the descriptions that is available on the platform is used.
     /// The descriptions are assets (Create > SeweralIdeas > Config > ...), put in the list in order of preference.
     /// </summary>
-    [CreateAssetMenu(menuName = "SeweralIdeas/"+nameof(ConfigStoragePlan))]
+    [CreateAssetMenu(menuName = "SeweralIdeas/Config/"+nameof(ConfigStoragePlan))]
     public class ConfigStoragePlan : ScriptableObject
     {
         [SerializeField]
