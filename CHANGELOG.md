@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.5.0]
+### Added
+- **`EnumConfigField`**: a field holding any enum, with no class to write per enum. The enum is a setting of the field (`SetEnumType`, or typed in the inspector), stored as `"Namespace.Outer+Nested, Assembly"`. The value is stored as the **name** of the option, never its number, so renumbering an enum does not change what was saved; a `[Flags]` enum is stored as the names joined by ", ". The string is canonical (`"air,  ground"` is kept as `"Ground, Air"`), so saved files and `StringValueEquals` are stable. Strings that are not an option (a number, an unknown name, a bad part of a flags list) are not accepted: `SetStringValue` returns false, and a bad value in a saved file leaves the field at its default. With no type set, or one that can't be found any more (the enum was renamed or removed), the field accepts any string, so no value is lost, and the inspector says so.
+  - It derives from `StringConfigField`, so everything that takes a string field takes this one: the storages, `StringConfigReader`, `ConfigGuiSwitch` and `ConfigGuiSwitchSlider`.
+  - Typed access for code: `TryGetValue<TEnum>`, `GetValue<TEnum>`, `SetValue<TEnum>` (an error if the field is of another enum) and `Subscribe<TEnum>(callback, invokeNow)`, whose result is disposed to stop. Static helpers `TryParseValue`, `IsActive`, `SetFlag`, `ResolveType`, `FormatTypeName` serve the readers and editors.
+  - The debug GUI shows a list of buttons, one per option (the current one pressed), or a list of toggles for flags. A row of a list of fields is one line: a button that moves on to the next option, or just the text for flags.
+- **`EnumConfigReader`**: passes the value on as the enum itself, whatever the enum (a `UnityEvent` can't carry one). `Bindings` write it by reflection to a field or property of the right type of any component or ScriptableObject (chosen from a popup of the members that fit); `Options` are `UnityEvent<bool>`s, one per option name, called with true when the option becomes the value and false when it stops being (of a flags enum: when the flag is contained in the value; the option 0 is on only for 0), and once at the start with the state then. Members reached only by reflection can be stripped by IL2CPP (a property that nothing else uses: add `[Preserve]`).
+- **`ConfigGuiEnumSwitch` and `ConfigGuiEnumSwitchSlider`**, the uGUI elements for an `EnumConfigField`, next to `ConfigGuiSwitch` and `ConfigGuiSwitchSlider` (which take any string). Their options are chosen from a popup of the names of the field's enum instead of being typed, and a value that is not an option is never written. The switch is one toggle per option, one on at a time; for a `[Flags]` enum each toggle is a flag, and any number can be on. The slider goes through the options in the order they are listed (not for flags: it warns). They live with the options drawers in a new editor assembly, `SeweralIdeas.ConfigGui.Editor`, compiled where uGUI and IMGUI are present.
+- A game object dropped on the target of a binding of the `EnumConfigReader` is replaced by the component that has the member: at once if there is one, otherwise the one chosen from a popup.
+- `ConfigListener` has a protected `Field` property for the field it listens to.
+- The inspector of an `EnumConfigField` picks the enum type in a popup window: a search box (Enter picks the first match, Escape closes) over the list of the enums whose name contains the text. The default value is a list of buttons, one per option (toggles for flags).
+- `ConfigFieldEditor.DrawFields` is overridable, to draw the properties of a field differently.
+- Edit mode tests (`Tests/Editor`).
+
+### Fixed
+- `ConfigGuiSwitch` never removed its listeners from the toggles: it added them again on every `OnEnable`, so a switch that was disabled and enabled again (a menu that is shown and hidden) called `OnToggle` several times per click. It removes them in `OnDisable` now.
+
+### Changed
+- **The text format (the file storage and the single-string PlayerPrefs storage) writes a string in quotes, and reads a quoted value as it is.** `name = "Hello World"` instead of `name = Hello\_World`; a number or a bool is written without quotes, as before. A value that starts with a quote is read verbatim up to the closing quote, spaces and `=` included; `\"` is a quote, `\\` a backslash, `\n` and `\r` the line breaks, and a backslash before anything else stays a backslash (a path can be written as it is). A quoted value can go over several lines (Windows line endings are read as `\n`), and only spaces may follow the closing quote. A value that does not start with a quote is read as before: unescaped spaces are ignored (also around the `=`), `\_` is a space, `\=`, `\n` and `\\` the other escapes. Quotes elsewhere in an unquoted value are just characters.
+- A second `=` in an unquoted value is part of the value (it used to start the key over). A `\r` outside quotes is ignored, so a file with Windows line endings reads the same.
+- A string field that holds nothing (null) is written as an empty string.
+
+### Breaking changes
+- **Files written by this version cannot be read by 0.4.0 and older**: they take the quotes for part of the value (and drop its spaces). Files written by older versions read as before. Upgrade: nothing, the next save rewrites the file in the new form.
+
+An enum option renamed in code makes the name saved for it invalid: it loads as the default.
+
 ## [0.4.0]
 ### Changed
 - **Config no longer depends on UnityUtils**, in its runtime or its editor: no asmdef of Config references another seweralideas assembly. The delayed text field of the numeric and string fields is an internal copy (`DelayedText`), and the editors pick a type to add with their own `GenericMenu` list (`TypeMenu`) in place of UnityUtils' `TypeDropdown` (no icons, no search).

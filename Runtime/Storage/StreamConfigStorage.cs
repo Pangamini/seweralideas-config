@@ -65,30 +65,84 @@ namespace SeweralIdeas.Config
         private void Parse(Stream stream)
         {
             using var reader = new StreamReader(stream, StreamEncoding);
+            ParseText(reader, m_loadedStringValues);
+        }
 
+        // A line is "key = value". The key and an unquoted value ignore every space except the escaped ones (\_), so the
+        // spaces around the = (or a missing one) don't matter. A value that starts with a quote is read as it is, spaces,
+        // = and all, up to the closing quote: \" is a quote, \\ a backslash, \n and \r the line breaks, and a backslash
+        // before anything else is just a backslash (so a path can be written as it is). It can go over several lines.
+        internal static void ParseText(TextReader reader, Dictionary<string, string> values)
+        {
             string? key = null;
             StringBuilder sb = new();
             bool escaping = false;
+            bool quoted = false;      // inside the quotes of a value
+            bool afterQuote = false;  // the closing quote has been read: the rest of the line has to be empty
+            bool quotedEscaping = false;
 
             void FinishLine()
             {
                 string value = sb.ToString();
                 sb.Clear();
                 if(!string.IsNullOrWhiteSpace(key))
-                    m_loadedStringValues.Add(key, value);
+                    values.Add(key, value);
                 key = null;
+                afterQuote = false;
             }
-            
+
             while(true)
             {
                 int val = reader.Read();
                 if(val < 0)
                 {
+                    if(quoted)
+                        throw new Exception("A quoted value is not closed");
                     FinishLine();
                     break;
                 }
 
                 char ch = (char)val;
+
+                if(quoted)
+                {
+                    if(quotedEscaping)
+                    {
+                        quotedEscaping = false;
+                        switch(ch)
+                        {
+                            case '"':  sb.Append('"'); break;
+                            case '\\': sb.Append('\\'); break;
+                            case 'n':  sb.Append('\n'); break;
+                            case 'r':  sb.Append('\r'); break;
+                            default:   sb.Append('\\').Append(ch); break; // verbatim
+                        }
+                    }
+                    else if(ch == '\\')
+                        quotedEscaping = true;
+                    else if(ch == '"')
+                    {
+                        quoted = false;
+                        afterQuote = true;
+                    }
+                    else if(ch == '\r' && reader.Peek() == '\n')
+                    {
+                        // The line break of a file with Windows line endings is a \n, as everywhere else
+                    }
+                    else
+                        sb.Append(ch);
+                    continue;
+                }
+
+                if(afterQuote)
+                {
+                    if(ch == '\n')
+                        FinishLine();
+                    else if(ch != ' ' && ch != '\t' && ch != '\r')
+                        throw new Exception($"Unexpected '{ch}' after the closing quote of the value of {key}");
+                    continue;
+                }
+
                 if(escaping)
                 {
                     if(!UnescapedChars.TryGetValue(ch, out var unescaped))
@@ -109,10 +163,14 @@ namespace SeweralIdeas.Config
                         FinishLine();
                         break;
                     case ' ':
+                    case '\r':
                         break;
-                    case '=':
+                    case '=' when key == null: // a second one is part of the value
                         key = sb.ToString();
                         sb.Clear();
+                        break;
+                    case '"' when key != null && sb.Length == 0:
+                        quoted = true;
                         break;
                     default:
                         sb.Append(ch);
@@ -137,10 +195,8 @@ namespace SeweralIdeas.Config
 
                 void WriteField(ConfigField field)
                 {
-                    string value = field.GetStringValue();
-                    WriteEscaped(writer, field.name);
-                    writer.Write(" = ");
-                    WriteEscaped(writer, value);
+                    // A string goes in quotes, as it is, so it can have spaces and still be easy to edit by hand
+                    WriteEntry(writer, field.name, field.GetStringValue(), field is ConfigField<string>);
                 }
 
                 if(enumerator.MoveNext())
@@ -165,7 +221,32 @@ namespace SeweralIdeas.Config
         }
 
         
-        private void WriteEscaped(TextWriter writer, string data)
+        internal static void WriteEntry(TextWriter writer, string key, string? value, bool quote)
+        {
+            WriteEscaped(writer, key);
+            writer.Write(" = ");
+            if(!quote)
+            {
+                WriteEscaped(writer, value ?? string.Empty);
+                return;
+            }
+
+            writer.Write('"');
+            foreach(char ch in value ?? string.Empty)
+            {
+                switch(ch)
+                {
+                    case '"':  writer.Write("\\\""); break;
+                    case '\\': writer.Write("\\\\"); break;
+                    case '\n': writer.Write("\\n"); break;
+                    case '\r': writer.Write("\\r"); break;
+                    default:   writer.Write(ch); break;
+                }
+            }
+            writer.Write('"');
+        }
+
+        private static void WriteEscaped(TextWriter writer, string data)
         {
             foreach (char ch in data)
             {

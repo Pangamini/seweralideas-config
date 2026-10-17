@@ -80,8 +80,8 @@ namespace SeweralIdeas.Config.Editor
                     config.RevealStorageInEditor();
             }
 
-            if(config.IsDirty)
-                EditorGUILayout.LabelField("Unsaved changes", EditorStyles.miniLabel);
+            // Empty, not left out, when there are none, so the rest of the inspector doesn't shift
+            EditorGUILayout.LabelField(config.IsDirty ? "Unsaved changes" : string.Empty, EditorStyles.miniLabel);
         }
 
         #region Table

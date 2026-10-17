@@ -1,6 +1,7 @@
 using System;
 using SeweralIdeas.Config;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace SeweralIdeas.ConfigGui
@@ -24,17 +25,39 @@ namespace SeweralIdeas.ConfigGui
                 option.m_toggle.group = group;
         }
 
+        private UnityAction<bool>[] m_listeners; // made on the first enable, so the same ones can be removed again
+
         protected override void OnEnable()
         {
             base.OnEnable();
-            foreach (var option in m_options)
+
+            if(m_listeners == null)
             {
-                option.m_toggle.onValueChanged.AddListener( isOn =>
+                m_listeners = new UnityAction<bool>[m_options.Length];
+                for(int i = 0; i < m_options.Length; i++)
                 {
-                    if(isOn) 
-                        OnToggle(option);
-                });
+                    Option option = m_options[i];
+                    m_listeners[i] = isOn =>
+                    {
+                        if(isOn)
+                            OnToggle(option);
+                    };
+                }
             }
+
+            for(int i = 0; i < m_options.Length; i++)
+                m_options[i].m_toggle.onValueChanged.AddListener(m_listeners[i]);
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+
+            if(m_listeners == null)
+                return;
+
+            for(int i = 0; i < m_options.Length; i++)
+                m_options[i].m_toggle.onValueChanged.RemoveListener(m_listeners[i]);
         }
         
         private void OnToggle(Option option) => OnGuiValueChanged(option.m_value);

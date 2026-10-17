@@ -11,7 +11,10 @@ namespace SeweralIdeas.Config
 
         [FormerlySerializedAs("m_configValue")]
         [SerializeField] private TVal? m_configField;
-        
+
+        /// <summary>The field this listens to (null if none is assigned).</summary>
+        protected TVal? Field => m_configField;
+
         protected virtual void Start()
         {
             if(m_configField == null)
