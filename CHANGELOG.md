@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- `FileConfigStorage` did not persist on WebGL: the persistent data folder lives in memory there and reaches the browser's IndexedDB only when synced. The file is synced when its write stream is closed (a `.jslib` calling `FS.syncfs`; nothing happens on other platforms).
+
+### Upgrade notes
+- On WebGL, `Application.quitting` is not reliably raised when the tab is closed or reloaded, so the auto-save on quit may never run there. Call `Config.Save()` where something has changed (it does nothing if the config is not dirty).
+
 ## [0.5.0]
 ### Added
 - **`EnumConfigField`**: a field holding any enum, with no class to write per enum. The enum is a setting of the field (`SetEnumType`, or typed in the inspector), stored as `"Namespace.Outer+Nested, Assembly"`. The value is stored as the **name** of the option, never its number, so renumbering an enum does not change what was saved; a `[Flags]` enum is stored as the names joined by ", ". The string is canonical (`"air,  ground"` is kept as `"Ground, Air"`), so saved files and `StringValueEquals` are stable. Strings that are not an option (a number, an unknown name, a bad part of a flags list) are not accepted: `SetStringValue` returns false, and a bad value in a saved file leaves the field at its default. With no type set, or one that can't be found any more (the enum was renamed or removed), the field accepts any string, so no value is lost, and the inspector says so.
