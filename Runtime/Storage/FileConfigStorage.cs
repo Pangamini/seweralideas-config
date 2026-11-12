@@ -18,7 +18,20 @@ namespace SeweralIdeas.Config
         {
             FileInfo file = GetFileInfo(config);
             Directory.CreateDirectory(file.Directory!.FullName);
-            return file.Open(FileMode.Create, FileAccess.Write);
+            return new SyncingFileStream(file.FullName);
+        }
+
+        // A file in the persistent data folder has to be synced to IndexedDB on WebGL once it is closed (a no-op elsewhere).
+        private sealed class SyncingFileStream : FileStream
+        {
+            public SyncingFileStream(string path) : base(path, FileMode.Create, FileAccess.Write) { }
+
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                if(disposing)
+                    WebGlFileSystem.Sync();
+            }
         }
         
         protected override Stream? CreateReadStream(Config config)
